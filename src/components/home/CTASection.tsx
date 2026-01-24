@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Phone, CheckCircle, Sparkles } from 'lucide-react';
+import { ArrowRight, MessageCircle, CheckCircle, Sparkles } from 'lucide-react';
 
 export default function CTASection() {
   return (
@@ -49,13 +49,13 @@ export default function CTASection() {
             </h2>
 
             <p className="text-lg text-white/70 mb-10 max-w-2xl mx-auto">
-              전문 상담사가 여러분의 성공적인 교육 이수와 사회 복귀를 도와드립니다.
+              전문 상담사가 여러분의 성공적인 교육 이수와 사회 복귀를 도와드립니다.<br />
               지금 바로 첫 걸음을 내딛어 보세요.
             </p>
 
             {/* Benefits */}
             <div className="flex flex-wrap justify-center gap-4 md:gap-8 mb-10">
-              {['법원 인정 공인교육', '100% 온라인 수강', '수료증 즉시 발급'].map(
+              {['법원 양형자료 채택', '100% 온라인 수강', '수료증 즉시 발급'].map(
                 (benefit, index) => (
                   <motion.div
                     key={benefit}
@@ -82,17 +82,19 @@ export default function CTASection() {
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <a
-                href="tel:1544-0000"
+                href="http://pf.kakao.com/_stxkUn/chat"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all"
               >
-                <Phone className="w-5 h-5" />
-                <span>1544-0000</span>
+                <MessageCircle className="w-5 h-5" />
+                <span>카카오톡 상담</span>
               </a>
             </div>
 
             {/* Trust Text */}
             <p className="text-white/50 text-sm mt-8">
-              평일 09:00~18:00 상담 가능 · 주말/공휴일 온라인 접수
+              카카오톡 24시간 상담 가능 · 언제든 편하게 문의하세요
             </p>
           </motion.div>
         </div>

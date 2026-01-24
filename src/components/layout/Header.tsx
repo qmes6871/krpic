@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, Phone, ArrowRight } from 'lucide-react';
+import { Menu, X, ChevronDown, MessageCircle, ArrowRight } from 'lucide-react';
 import { categories } from '@/data/categories';
 
 export default function Header() {
@@ -140,15 +140,17 @@ export default function Header() {
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center gap-3">
             <a
-              href="tel:1544-0000"
+              href="http://pf.kakao.com/_stxkUn/chat"
+              target="_blank"
+              rel="noopener noreferrer"
               className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
                 isScrolled
                   ? 'text-primary-600 hover:bg-primary-50'
                   : 'text-white/80 hover:text-white hover:bg-white/10'
               }`}
             >
-              <Phone className="w-4 h-4" />
-              <span>1544-0000</span>
+              <MessageCircle className="w-4 h-4" />
+              <span>카카오톡 상담</span>
             </a>
             <Link
               href="/education"
@@ -258,11 +260,13 @@ export default function Header() {
 
               <div className="pt-4 space-y-3">
                 <a
-                  href="tel:1544-0000"
+                  href="http://pf.kakao.com/_stxkUn/chat"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full px-4 py-3 border border-primary-200 text-primary-700 font-medium rounded-xl hover:bg-primary-50 transition-colors"
                 >
-                  <Phone className="w-4 h-4" />
-                  <span>1544-0000</span>
+                  <MessageCircle className="w-4 h-4" />
+                  <span>카카오톡 상담</span>
                 </a>
                 <Link
                   href="/education"

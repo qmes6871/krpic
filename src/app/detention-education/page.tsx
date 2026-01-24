@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   Clock,
   CheckCircle,
-  Phone,
+  ClipboardList,
   Shield,
   BookOpen,
   Users,
@@ -18,38 +18,78 @@ import {
   Award,
   Zap,
   FileCheck,
-  Mail,
   Building2,
 } from 'lucide-react';
 
 const courses = [
   {
     id: 'detention-basic',
-    title: '구속 수감자 기본 교육과정',
-    description: '수감 중인 분들을 위한 기본 재범방지교육 프로그램입니다. 자기 성찰과 사회 복귀 준비를 돕습니다.',
-    price: 80000,
-    duration: '16시간',
-    features: ['자기 성찰 교육', '법률 상식', '사회 복귀 준비', '상담 연계'],
+    title: '수감자 교육 기본과정',
+    price: 150000,
+    duration: '1시간',
+    features: [
+      '재범방지교육 수료증',
+      '인지행동개선훈련 교육 수료증',
+      '준법의식교육 수료증',
+      '재범방지교육통합센터 교육내용 증명서',
+      '재범방지교육 상세 교육과정 증명서',
+      '인지행동개선훈련 상세 교육과정 증명서',
+      '준법의식교육 상세 교육과정 증명서',
+      '재범 위험 종합 관리 평가 증명서',
+    ],
     gradient: 'from-blue-500 to-blue-600',
     icon: BookOpen,
   },
   {
-    id: 'detention-counseling',
-    title: '심리 상담 연계 교육과정',
-    description: '전문 상담사와 함께하는 심리 상담이 포함된 교육 프로그램입니다.',
-    price: 120000,
-    duration: '24시간',
-    features: ['1:1 심리 상담', '그룹 치료', '가족 상담 연계', '사후 관리'],
+    id: 'detention-efficient',
+    title: '수감자 교육 효율과정',
+    price: 250000,
+    duration: '1시간',
+    features: [
+      '재범방지교육 수료증',
+      '인지행동개선훈련 교육 수료증',
+      '준법의식교육 수료증',
+      '재범방지교육통합센터 교육내용 증명서',
+      '재범방지교육 상세 교육과정 증명서',
+      '인지행동개선훈련 상세 교육과정 증명서',
+      '준법의식교육 상세 교육과정 증명서',
+      '심리상담사와 편지를 통한 상담',
+      '심리상담사 종합 소견서',
+      '심리상담 소감문 제출 (대필 양식 제공)',
+      '형사사건 전문 변호사와 편지를 통한 상담',
+      '변호사 상담 증명서 [위법공포(違法恐怖) 내용 첨부]',
+      '재범 위험 종합 관리 평가 증명서',
+    ],
     gradient: 'from-violet-500 to-purple-600',
     icon: Heart,
+    popular: true,
   },
   {
-    id: 'detention-job',
-    title: '직업 재활 교육과정',
-    description: '출소 후 안정적인 사회 복귀를 위한 직업 재활 교육 프로그램입니다.',
-    price: 100000,
-    duration: '20시간',
-    features: ['직업 탐색', '이력서 작성', '면접 준비', '취업 연계'],
+    id: 'detention-integrated',
+    title: '수감자 교육 통합과정',
+    price: 350000,
+    duration: '1시간',
+    features: [
+      '재범방지교육 수료증',
+      '인지행동개선훈련 교육 수료증',
+      '준법의식교육 수료증',
+      '재범방지교육통합센터 교육내용 증명서',
+      '재범방지교육 상세 교육과정 증명서',
+      '인지행동개선훈련 상세 교육과정 증명서',
+      '준법의식교육 상세 교육과정 증명서',
+      '심리상담사와 편지를 통한 상담',
+      '심리상담사 종합 소견서',
+      '심리상담 소감문 제출 (간편대필 양식 제공)',
+      '형사사건 전문 변호사와 편지를 통한 상담',
+      '변호사 상담 증명서 [위법공포(違法恐怖) 내용 첨부]',
+      '재범방지교육통합센터 서명 탄원서 1부 제출',
+      '재범방지교육통합센터 서명 소견서 1부 제출',
+      '재범방지교육·인지행동개선·준법의식 각 이수 소감문 제출 (간편대필 양식 제공)',
+      '재범방지를 위한 준법생활 계획서',
+      '반성문 1회 대필 (분량은 사건에 따라 상이)',
+      '효과적인 반성문 작성 가이드 양식',
+      '재범 위험 종합 관리 평가 증명서',
+    ],
     gradient: 'from-emerald-500 to-teal-600',
     icon: Briefcase,
   },
@@ -58,26 +98,26 @@ const courses = [
 const steps = [
   {
     number: '01',
-    title: '상담 신청',
-    description: '전화 또는 이메일로 상담을 신청하시면 담당자가 연락드립니다.',
-    icon: Phone,
+    title: '교육 신청',
+    description: '수감자의 보호자가 교육을 신청합니다.',
+    icon: ClipboardList,
   },
   {
     number: '02',
-    title: '교육 배정',
-    description: '상담 결과에 따라 적합한 교육과정이 배정됩니다.',
+    title: '교육 내용 전달',
+    description: '교육 배정 후 교육 내용을 수감자에게 전달합니다.',
     icon: FileCheck,
   },
   {
     number: '03',
-    title: '교육 수강',
-    description: '교정시설 내에서 온라인 또는 오프라인으로 교육을 수강합니다.',
+    title: '수료증 발급',
+    description: '수감자의 교육 소감문을 받아 수료증 및 증명서를 발급합니다.',
     icon: BookOpen,
   },
   {
     number: '04',
-    title: '수료 및 사후관리',
-    description: '교육 이수 후 수료증이 발급되며, 필요시 사후 상담이 제공됩니다.',
+    title: '양형자료 제출',
+    description: '재범방지교육통합센터에서 발급한 양형자료를 재판부에 제출합니다.',
     icon: Award,
   },
 ];
@@ -131,11 +171,13 @@ export default function DetentionEducationPage() {
 
                 <div className="flex flex-wrap gap-4">
                   <a
-                    href="tel:1544-0000"
+                    href="http://pf.kakao.com/_stxkUn/chat"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-accent-500/25 hover:shadow-accent-500/40"
                   >
-                    <Phone className="w-5 h-5" />
-                    상담 신청하기
+                    <MessageCircle className="w-5 h-5" />
+                    카카오톡 상담
                   </a>
                   <Link
                     href="/education"
@@ -155,7 +197,7 @@ export default function DetentionEducationPage() {
                 className="hidden lg:grid grid-cols-2 gap-4"
               >
                 {[
-                  { value: '법원 인정', label: '공인 수료증 발급', icon: Shield },
+                  { value: '법원 양형자료 채택', label: '수료증 발급', icon: Shield },
                   { value: '1:1 상담', label: '전문 상담사 배정', icon: Users },
                   { value: '3개', label: '맞춤 교육 과정', icon: BookOpen },
                   { value: '24시간', label: '온라인 학습 지원', icon: Clock },
@@ -183,7 +225,7 @@ export default function DetentionEducationPage() {
         <div className="container-custom">
           <div className="grid grid-cols-2 gap-3">
             {[
-              { value: '법원 인정', label: '공인 수료증' },
+              { value: '법원 양형자료 채택', label: '수료증' },
               { value: '1:1 상담', label: '전문 상담사' },
               { value: '3개', label: '맞춤 교육 과정' },
               { value: '24시간', label: '온라인 학습' },
@@ -220,7 +262,7 @@ export default function DetentionEducationPage() {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
             {courses.map((course, index) => (
               <motion.div
                 key={course.id}
@@ -230,7 +272,8 @@ export default function DetentionEducationPage() {
                 transition={{ delay: index * 0.1 }}
                 className="group"
               >
-                <div className="h-full bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-primary-100 transition-all duration-300 hover:-translate-y-2">
+                <div className="h-full bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border-2 border-primary-100 transition-all duration-300 hover:-translate-y-2 relative">
+
                   {/* Course Header */}
                   <div className={`bg-gradient-to-br ${course.gradient} p-6 relative overflow-hidden`}>
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
@@ -239,42 +282,34 @@ export default function DetentionEducationPage() {
                         <course.icon className="w-7 h-7 text-white" />
                       </div>
                       <h3 className="text-xl font-bold text-white mb-2">{course.title}</h3>
-                      <div className="flex items-center gap-2 text-white/80 text-sm">
-                        <Clock className="w-4 h-4" />
-                        {course.duration}
+                      <div className="text-3xl font-bold text-white">
+                        {course.price.toLocaleString()}원
                       </div>
                     </div>
                   </div>
 
                   {/* Course Body */}
                   <div className="p-6">
-                    <p className="text-primary-600 mb-6">
-                      {course.description}
-                    </p>
+                    <div className="text-sm font-medium text-secondary-600 mb-4">
+                      포함 내역 ({course.features.length}개)
+                    </div>
 
-                    <ul className="space-y-3 mb-6">
+                    <ul className="space-y-2.5 mb-6 max-h-[400px] overflow-y-auto pr-2">
                       {course.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-3 text-primary-700">
-                          <div className="w-5 h-5 bg-secondary-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <CheckCircle className="w-3 h-3 text-secondary-600" />
-                          </div>
-                          {feature}
+                        <li key={idx} className="flex items-start gap-2 text-sm text-primary-700">
+                          <CheckCircle className="w-4 h-4 text-secondary-500 flex-shrink-0 mt-0.5" />
+                          <span>{feature}</span>
                         </li>
                       ))}
                     </ul>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-primary-100">
-                      <div>
-                        <span className="text-sm text-primary-500">교육비</span>
-                        <div className="text-2xl font-bold text-primary-900">
-                          {course.price.toLocaleString()}원
-                        </div>
-                      </div>
-                      <button className="inline-flex items-center gap-2 px-5 py-3 bg-primary-900 text-white font-medium rounded-xl hover:bg-primary-800 transition-colors group-hover:gap-3">
-                        상담 신청
-                        <ArrowRight className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <Link
+                      href={`/detention-education/${course.id}`}
+                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-3.5 bg-primary-900 hover:bg-primary-800 text-white font-semibold rounded-xl transition-colors"
+                    >
+                      자세히 보기
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
                   </div>
                 </div>
               </motion.div>
@@ -358,10 +393,10 @@ export default function DetentionEducationPage() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {[
-              { icon: Shield, title: '법원 인정 수료증', desc: '재판부에서 공식 인정하는 수료증 발급', gradient: 'from-blue-500 to-blue-600' },
+              { icon: Shield, title: '법원 양형자료 채택 수료증', desc: '재판부에서 공식 인정하는 수료증 발급', gradient: 'from-blue-500 to-blue-600' },
               { icon: Users, title: '1:1 전문 상담', desc: '전문 상담사의 맞춤형 상담 제공', gradient: 'from-violet-500 to-purple-600' },
               { icon: Target, title: '사후 관리', desc: '출소 후에도 지속적인 관리 지원', gradient: 'from-pink-500 to-rose-500' },
-              { icon: Zap, title: '유연한 학습', desc: '교정시설 내 온/오프라인 학습', gradient: 'from-emerald-500 to-teal-600' },
+              { icon: Zap, title: '유연한 학습', desc: '수감자 환경에 맞는 오프라인 학습', gradient: 'from-emerald-500 to-teal-600' },
             ].map((item, index) => (
               <motion.div
                 key={item.title}
@@ -405,26 +440,24 @@ export default function DetentionEducationPage() {
                   전문 상담사에게 문의해 주세요. 친절하게 안내해 드립니다.
                 </p>
 
-                <div className="space-y-4">
-                  {[
-                    { icon: Phone, title: '전화 상담', value: '1544-0000', sub: '평일 09:00~18:00', color: 'bg-blue-500' },
-                    { icon: Mail, title: '이메일', value: 'support@krpic.co.kr', sub: '24시간 접수', color: 'bg-violet-500' },
-                    { icon: MessageCircle, title: '카카오톡', value: '@krpic', sub: '실시간 상담', color: 'bg-amber-500' },
-                  ].map((contact) => (
-                    <div
-                      key={contact.title}
-                      className="flex items-center gap-4 p-4 bg-primary-50 rounded-xl hover:bg-primary-100 transition-colors"
-                    >
-                      <div className={`w-12 h-12 ${contact.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                        <contact.icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-semibold text-primary-900">{contact.title}</div>
-                        <div className="text-secondary-600">{contact.value}</div>
-                      </div>
-                      <div className="text-sm text-primary-400">{contact.sub}</div>
-                    </div>
-                  ))}
+                <div className="bg-secondary-50 border border-secondary-200 rounded-2xl p-6 text-center">
+                  <div className="w-14 h-14 bg-gradient-to-br from-accent-500 to-secondary-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <MessageCircle className="w-7 h-7 text-white" />
+                  </div>
+                  <h4 className="font-bold text-primary-900 text-lg mb-2">24시간 카카오톡 상담</h4>
+                  <p className="text-primary-600 text-sm mb-4">
+                    새벽이든, 주말이든 편하게 문의하세요.<br />
+                    전문 상담사가 빠르게 답변드립니다.
+                  </p>
+                  <a
+                    href="http://pf.kakao.com/_stxkUn/chat"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-secondary-600 hover:bg-secondary-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    카카오톡 상담하기
+                  </a>
                 </div>
               </motion.div>
 
@@ -446,11 +479,13 @@ export default function DetentionEducationPage() {
 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <a
-                    href="tel:1544-0000"
+                    href="http://pf.kakao.com/_stxkUn/chat"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-secondary-900 font-semibold rounded-xl hover:bg-secondary-50 transition-colors"
                   >
-                    <Phone className="w-5 h-5" />
-                    1544-0000
+                    <MessageCircle className="w-5 h-5" />
+                    카카오톡 상담
                   </a>
                   <Link
                     href="/about"

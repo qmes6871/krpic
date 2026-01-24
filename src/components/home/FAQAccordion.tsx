@@ -61,11 +61,13 @@ export default function FAQAccordion() {
                     전문 상담사가 친절히 안내해 드립니다.
                   </p>
                   <a
-                    href="tel:1544-0000"
+                    href="http://pf.kakao.com/_stxkUn/chat"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-secondary-600 font-medium hover:text-secondary-700"
                   >
-                    1544-0000
-                    <span className="text-xs text-primary-400">(평일 09:00~18:00)</span>
+                    카카오톡 상담
+                    <span className="text-xs text-primary-400">(24시간 가능)</span>
                   </a>
                 </div>
               </div>

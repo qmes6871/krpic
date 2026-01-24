@@ -12,15 +12,13 @@ import {
   Award,
   FileCheck,
   ArrowRight,
-  Phone,
-  Mail,
   MessageCircle,
+  Clock,
   Shield,
   BookOpen,
   Scale,
   Play,
   Zap,
-  Clock,
   BadgeCheck
 } from 'lucide-react';
 
@@ -106,10 +104,15 @@ export default function AboutPage() {
                     <Play className="w-5 h-5" />
                     교육과정 둘러보기
                   </Link>
-                  <button className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition-all">
-                    <Phone className="w-5 h-5" />
-                    상담 문의
-                  </button>
+                  <a
+                    href="http://pf.kakao.com/_stxkUn/chat"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition-all"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    카카오톡 상담
+                  </a>
                 </div>
               </motion.div>
 
@@ -279,6 +282,161 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* Expert Network Section */}
+      <section className="py-20 px-4 bg-white relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-primary-100/30 via-secondary-100/30 to-accent-100/30 rounded-full blur-3xl" />
+        </div>
+
+        <div className="container-custom relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary-100 to-secondary-100 text-primary-700 text-sm font-medium mb-4">
+              <Scale className="w-4 h-4" />
+              전문가와 함께하세요
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-primary-900 mb-4">
+              법률과 심리, 최고의 전문가가 함께합니다
+            </h2>
+            <p className="text-primary-600 max-w-2xl mx-auto">
+              양형에 유리한 수료증 발급을 위해 각 분야 전문가들이 협력합니다
+            </p>
+          </motion.div>
+
+          {/* 유나이트 로고 */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="flex justify-center mb-12"
+          >
+            <div className="bg-[#3D2B1F] rounded-3xl shadow-xl p-10 flex flex-col items-center text-center">
+              <div className="w-36 h-36 flex items-center justify-center mb-5">
+                <Image
+                  src="/krpic/images/unite-logo.png"
+                  alt="법률사무소 유나이트"
+                  width={144}
+                  height={144}
+                  className="object-contain"
+                />
+              </div>
+              <div className="text-2xl font-bold text-white mb-1">법률사무소 유나이트</div>
+              <div className="text-white/70">대한변호사협회 등록 법률사무소</div>
+            </div>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* 변호사 카드 */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+            >
+              <div className="h-full bg-gradient-to-br from-primary-900 to-primary-800 rounded-3xl p-8 text-white relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-accent-500/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-accent-400 to-accent-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                    <Scale className="w-8 h-8 text-white" />
+                  </div>
+
+                  <h3 className="text-2xl font-bold mb-2">법률사무소 유나이트</h3>
+                  <p className="text-white/60 text-sm mb-4">대한변호사협회 등록</p>
+
+                  <p className="text-white/80 leading-relaxed mb-6">
+                    대한변호사협회에 등록된 법률사무소 변호사와 함께<br />
+                    양형에 유리한 교육 수료증을 발급해 드립니다.
+                  </p>
+
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-1.5 text-sm bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                      <BadgeCheck className="w-4 h-4 text-accent-400" />
+                      양형 자료 활용
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-sm bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                      <BadgeCheck className="w-4 h-4 text-accent-400" />
+                      법원 제출 가능
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* 심리상담사 카드 */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              <div className="h-full bg-gradient-to-br from-secondary-600 to-secondary-700 rounded-3xl p-8 text-white relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                    <Heart className="w-8 h-8 text-white" />
+                  </div>
+
+                  <h3 className="text-2xl font-bold mb-2">심리상담 전문가</h3>
+                  <p className="text-white/60 text-sm mb-4">국가공인 자격 보유</p>
+
+                  <p className="text-white/80 leading-relaxed mb-6">
+                    국가공인 자격을 보유한 심리상담사가<br />
+                    체계적인 재범방지 교육 프로그램을 운영합니다.
+                  </p>
+
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-1.5 text-sm bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                      <BadgeCheck className="w-4 h-4 text-white" />
+                      공인 자격 보유
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-sm bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                      <BadgeCheck className="w-4 h-4 text-white" />
+                      전문 상담 지원
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* 성과 지표 */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto"
+          >
+            {[
+              { value: '1500+', label: '성공 사례', color: 'bg-primary-900' },
+              { value: '100%', label: '양형자료 채택', color: 'bg-secondary-600' },
+              { value: '10년+', label: '교육 운영 경력', color: 'bg-accent-500' },
+              { value: '98%', label: '수료율', color: 'bg-violet-600' },
+            ].map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 + index * 0.1 }}
+                className={`${stat.color} rounded-2xl p-5 text-center text-white`}
+              >
+                <div className="text-2xl md:text-3xl font-bold mb-1">{stat.value}</div>
+                <div className="text-white/70 text-sm">{stat.label}</div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* CTA Section - 감형 교육 */}
       <section className="py-24 px-4 bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 relative overflow-hidden">
         {/* Background Pattern */}
@@ -323,8 +481,8 @@ export default function AboutPage() {
             className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
           >
             {[
-              { icon: Scale, title: '법원 인정', desc: '재판부에서 공식 인정하는 수료증', gradient: 'from-blue-500 to-blue-600' },
-              { icon: Shield, title: '검찰 인정', desc: '검찰 단계에서도 유리한 자료', gradient: 'from-violet-500 to-purple-600' },
+              { icon: Scale, title: '법원 양형자료 채택', desc: '재판부에서 공식 인정하는 수료증', gradient: 'from-blue-500 to-blue-600' },
+              { icon: Shield, title: '경찰,검찰 양형자료까지', desc: '검찰 단계에서도 유리한 자료', gradient: 'from-violet-500 to-purple-600' },
               { icon: Zap, title: '즉시 발급', desc: '수료 직후 바로 수료증 발급', gradient: 'from-amber-500 to-orange-500' },
               { icon: Monitor, title: '온라인 수강', desc: '24시간 언제 어디서나 학습', gradient: 'from-emerald-500 to-teal-600' },
             ].map((item, index) => (
@@ -385,13 +543,16 @@ export default function AboutPage() {
               <FileCheck className="w-5 h-5" />
               교육과정 보기
             </Link>
-            <Link
-              href="/notice"
+            <a
+              href="http://pf.kakao.com/_stxkUn/chat"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/20 transition-all hover:-translate-y-0.5"
             >
-              상담 신청하기
+              <MessageCircle className="w-5 h-5" />
+              카카오톡 상담
               <ArrowRight className="w-5 h-5" />
-            </Link>
+            </a>
           </motion.div>
         </div>
       </section>
@@ -415,7 +576,7 @@ export default function AboutPage() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {[
-              { icon: BadgeCheck, title: '법원·검찰 인정', desc: '공인된 수료증 발급', color: 'bg-blue-500' },
+              { icon: BadgeCheck, title: '법원·검찰 채택 문서', desc: '채택된 수료증 발급', color: 'bg-blue-500' },
               { icon: Clock, title: '24시간 학습', desc: '언제 어디서나 수강 가능', color: 'bg-violet-500' },
               { icon: Users, title: '전문 상담', desc: '1:1 맞춤 상담 지원', color: 'bg-pink-500' },
               { icon: Zap, title: '즉시 발급', desc: '수료 후 바로 수료증 발급', color: 'bg-amber-500' },
@@ -471,32 +632,26 @@ export default function AboutPage() {
             </p>
           </motion.div>
 
-          {/* Contact Cards */}
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {[
-              { icon: Phone, title: '전화 상담', value: '1544-0000', sub: '평일 09:00~18:00', gradient: 'from-blue-500 to-blue-600' },
-              { icon: Mail, title: '이메일', value: 'support@krpic.co.kr', sub: '24시간 접수', gradient: 'from-violet-500 to-purple-600' },
-              { icon: MessageCircle, title: '카카오톡', value: '@krpic', sub: '실시간 상담', gradient: 'from-amber-500 to-orange-500' },
-            ].map((contact, index) => (
-              <motion.div
-                key={contact.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="group"
-              >
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-center h-full">
-                  <div className={`w-16 h-16 bg-gradient-to-br ${contact.gradient} rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform shadow-lg`}>
-                    <contact.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <div className="text-white/60 text-sm mb-1">{contact.title}</div>
-                  <div className="text-white font-bold text-xl mb-2">{contact.value}</div>
-                  <div className="text-white/50 text-sm">{contact.sub}</div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          {/* 24시간 상담 안내 */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-2xl mx-auto"
+          >
+            <div className="bg-gradient-to-r from-accent-500/20 to-secondary-500/20 border border-accent-500/30 rounded-3xl p-8 text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-secondary-500 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg">
+                <Clock className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-3">
+                24시간 언제든 상담 가능
+              </h3>
+              <p className="text-white/70 leading-relaxed">
+                새벽이든, 주말이든 상관없이 카카오톡으로 편하게 문의하세요.<br />
+                전문 상담사가 빠르게 답변드리겠습니다.
+              </p>
+            </div>
+          </motion.div>
 
           {/* CTA */}
           <motion.div
@@ -507,11 +662,13 @@ export default function AboutPage() {
             className="text-center mt-12"
           >
             <a
-              href="tel:1544-0000"
+              href="http://pf.kakao.com/_stxkUn/chat"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-2xl font-semibold hover:shadow-xl hover:shadow-accent-500/25 hover:-translate-y-1 transition-all duration-300 group"
             >
-              <Phone className="w-5 h-5" />
-              <span>지금 바로 상담하기</span>
+              <MessageCircle className="w-5 h-5" />
+              <span>카카오톡 상담하기</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </a>
           </motion.div>

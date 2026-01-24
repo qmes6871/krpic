@@ -54,14 +54,14 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full mb-8"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full mb-8 mt-4 md:mt-0"
             >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary-400"></span>
               </span>
               <span className="text-sm font-medium text-white/90">
-                법원·검찰 공인 교육기관
+                법원·검찰·경찰 재범방지 교육기관
               </span>
             </motion.div>
 
@@ -95,8 +95,8 @@ export default function HeroSection() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg md:text-xl text-white/70 mb-10 leading-relaxed max-w-xl"
             >
-              전문 상담사와 함께하는 맞춤형 재범방지교육 프로그램으로
-              성공적인 사회 복귀를 지원합니다.
+              대한변호사협회 등록된 법률사무소 유나이트 변호사 · 공신자격이 있는<br />
+              심리상담사가 양형을 위해 한 자리에 모였습니다.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -114,12 +114,12 @@ export default function HeroSection() {
                 <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
                 <div className="absolute inset-0 bg-gradient-to-r from-accent-600 to-accent-700 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
-              <button className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-white/5 backdrop-blur-md border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/10 hover:border-white/30 transition-all">
+              <Link href="/reviews" className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-white/5 backdrop-blur-md border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/10 hover:border-white/30 transition-all">
                 <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/20 group-hover:scale-110 transition-all">
                   <Play className="w-4 h-4 fill-white ml-0.5" />
                 </div>
-                <span>교육 소개</span>
-              </button>
+                <span>수강생 후기</span>
+              </Link>
             </motion.div>
 
             {/* Trust Indicators */}
@@ -127,7 +127,7 @@ export default function HeroSection() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="flex flex-wrap gap-x-8 gap-y-4"
+              className="flex flex-wrap gap-x-8 gap-y-4 mt-4 md:mt-0"
             >
               {[
                 { icon: Shield, text: '100% 온라인 수강' },
@@ -203,7 +203,7 @@ export default function HeroSection() {
 
                   {/* Features */}
                   <div className="mt-6 space-y-3">
-                    {['법원 인정 공인교육', '전문 상담사 지원', '모바일 완벽 지원'].map((feature, i) => (
+                    {['법원 양형자료 채택', '전문 상담사 지원', '모바일 완벽 지원'].map((feature, i) => (
                       <div key={i} className="flex items-center gap-3 text-white/70">
                         <CheckCircle2 className="w-4 h-4 text-secondary-400" />
                         <span className="text-sm">{feature}</span>
@@ -238,7 +238,7 @@ export default function HeroSection() {
               >
                 <div className="flex items-center gap-2">
                   <Shield className="w-5 h-5 text-white" />
-                  <span className="text-white font-semibold text-sm">법원 인정</span>
+                  <span className="text-white font-semibold text-sm">법원 양형자료 채택</span>
                 </div>
               </motion.div>
             </div>
