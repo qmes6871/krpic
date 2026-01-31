@@ -1,17 +1,12 @@
 'use client';
-
-import { useState } from 'react';
 import {
-  Star,
   Quote,
   ThumbsUp,
   BadgeCheck,
-  TrendingUp,
   MessageSquare,
-  Filter,
   Sparkles
 } from 'lucide-react';
-import { reviews, reviewCategories, calculateReviewStats } from '@/data/reviews';
+import { reviews, calculateReviewStats } from '@/data/reviews';
 import FadeIn from '@/components/common/FadeIn';
 
 function formatRelativeDate(dateString: string): string {
@@ -28,27 +23,12 @@ function formatRelativeDate(dateString: string): string {
 }
 
 export default function ReviewsPage() {
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState<'latest' | 'helpful' | 'rating'>('latest');
   const stats = calculateReviewStats();
 
-  const getFilteredAndSortedReviews = () => {
-    const filtered = selectedCategory === 'all'
-      ? [...reviews]
-      : reviews.filter(r => r.category === selectedCategory);
-
-    return [...filtered].sort((a, b) => {
-      if (sortBy === 'latest') {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      } else if (sortBy === 'helpful') {
-        return b.helpful - a.helpful;
-      } else {
-        return b.rating - a.rating;
-      }
-    });
-  };
-
-  const filteredAndSortedReviews = getFilteredAndSortedReviews();
+  // 최신순으로 정렬
+  const sortedReviews = [...reviews].sort((a, b) =>
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
   const bestReviews = [...reviews].sort((a, b) => b.helpful - a.helpful).slice(0, 3);
 
   return (
@@ -88,23 +68,9 @@ export default function ReviewsPage() {
       {/* Stats Section - Floating Cards */}
       <section className="relative -mt-20 z-10 px-4">
         <div className="container-custom">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {/* Average Rating */}
-            <FadeIn delay={0}>
-              <div className="bg-white rounded-2xl p-6 shadow-lg shadow-primary-900/5 border border-primary-100">
-                <div className="flex items-center gap-2 text-accent-500 mb-2">
-                  <Star className="w-5 h-5 fill-accent-400" />
-                  <span className="text-sm font-medium">평균 평점</span>
-                </div>
-                <div className="text-3xl md:text-4xl font-bold text-primary-900">
-                  {stats.averageRating}
-                  <span className="text-lg text-primary-400">/5</span>
-                </div>
-              </div>
-            </FadeIn>
-
+          <div className="grid grid-cols-3 gap-4 max-w-3xl mx-auto">
             {/* Total Reviews */}
-            <FadeIn delay={100}>
+            <FadeIn delay={0}>
               <div className="bg-white rounded-2xl p-6 shadow-lg shadow-primary-900/5 border border-primary-100">
                 <div className="flex items-center gap-2 text-secondary-500 mb-2">
                   <MessageSquare className="w-5 h-5" />
@@ -118,7 +84,7 @@ export default function ReviewsPage() {
             </FadeIn>
 
             {/* Recommend Rate */}
-            <FadeIn delay={200}>
+            <FadeIn delay={100}>
               <div className="bg-white rounded-2xl p-6 shadow-lg shadow-primary-900/5 border border-primary-100">
                 <div className="flex items-center gap-2 text-green-500 mb-2">
                   <ThumbsUp className="w-5 h-5" />
@@ -132,7 +98,7 @@ export default function ReviewsPage() {
             </FadeIn>
 
             {/* Verified Reviews */}
-            <FadeIn delay={300}>
+            <FadeIn delay={200}>
               <div className="bg-white rounded-2xl p-6 shadow-lg shadow-primary-900/5 border border-primary-100">
                 <div className="flex items-center gap-2 text-blue-500 mb-2">
                   <BadgeCheck className="w-5 h-5" />
@@ -145,39 +111,6 @@ export default function ReviewsPage() {
               </div>
             </FadeIn>
           </div>
-        </div>
-      </section>
-
-      {/* Rating Distribution */}
-      <section className="py-12 px-4">
-        <div className="container-custom">
-          <FadeIn>
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-lg shadow-primary-900/5 border border-primary-100 max-w-2xl mx-auto">
-              <h3 className="text-lg font-bold text-primary-900 mb-6 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-secondary-500" />
-                평점 분포
-              </h3>
-              <div className="space-y-3">
-                {stats.ratingDistribution.map(({ rating, count, percentage }, index) => (
-                  <FadeIn key={rating} delay={index * 100}>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1 w-16">
-                        <span className="text-sm font-medium text-primary-700">{rating}</span>
-                        <Star className="w-4 h-4 text-accent-400 fill-accent-400" />
-                      </div>
-                      <div className="flex-1 h-3 bg-primary-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-accent-400 to-accent-500 rounded-full transition-all duration-700"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                      <span className="text-sm text-primary-500 w-12 text-right">{count}개</span>
-                    </div>
-                  </FadeIn>
-                ))}
-              </div>
-            </div>
-          </FadeIn>
         </div>
       </section>
 
@@ -224,19 +157,6 @@ export default function ReviewsPage() {
                       </div>
                     </div>
 
-                    <div className="flex gap-0.5 mb-3">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <Star
-                          key={i}
-                          className={`w-4 h-4 ${
-                            i <= review.rating
-                              ? 'text-accent-400 fill-accent-400'
-                              : 'text-primary-200'
-                          }`}
-                        />
-                      ))}
-                    </div>
-
                     <p className="text-primary-700 leading-relaxed mb-4 line-clamp-4">
                       &ldquo;{review.content}&rdquo;
                     </p>
@@ -258,51 +178,12 @@ export default function ReviewsPage() {
         </div>
       </section>
 
-      {/* Filter & Reviews */}
+      {/* Reviews */}
       <section className="py-12 px-4">
         <div className="container-custom">
-          {/* Filter Bar */}
-          <FadeIn>
-            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-lg border border-primary-100 mb-8">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                {/* Category Filter */}
-                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2 md:pb-0">
-                  <Filter className="w-5 h-5 text-primary-400 flex-shrink-0" />
-                  {reviewCategories.map((category) => (
-                    <button
-                      key={category.id}
-                      onClick={() => setSelectedCategory(category.id)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                        selectedCategory === category.id
-                          ? 'bg-primary-900 text-white'
-                          : 'bg-primary-100 text-primary-600 hover:bg-primary-200'
-                      }`}
-                    >
-                      {category.name}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Sort Options */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-primary-500">정렬:</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as 'latest' | 'helpful' | 'rating')}
-                    className="px-4 py-2 rounded-lg bg-primary-50 border border-primary-200 text-primary-700 text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500"
-                  >
-                    <option value="latest">최신순</option>
-                    <option value="helpful">도움순</option>
-                    <option value="rating">평점순</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </FadeIn>
-
           {/* Reviews Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredAndSortedReviews.map((review, index) => (
+            {sortedReviews.map((review, index) => (
               <FadeIn key={review.id} delay={index * 50}>
                 <div className="group h-full">
                   <div className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl border border-primary-100 transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
@@ -329,20 +210,6 @@ export default function ReviewsPage() {
                       <Quote className="w-6 h-6 text-primary-200 group-hover:text-accent-300 transition-colors" />
                     </div>
 
-                    {/* Rating */}
-                    <div className="flex gap-0.5 mb-3">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <Star
-                          key={i}
-                          className={`w-4 h-4 ${
-                            i <= review.rating
-                              ? 'text-accent-400 fill-accent-400'
-                              : 'text-primary-200'
-                          }`}
-                        />
-                      ))}
-                    </div>
-
                     {/* Content */}
                     <p className="text-primary-700 leading-relaxed flex-1 mb-4">
                       {review.content}
@@ -365,7 +232,7 @@ export default function ReviewsPage() {
           </div>
 
           {/* Empty State */}
-          {filteredAndSortedReviews.length === 0 && (
+          {sortedReviews.length === 0 && (
             <FadeIn>
               <div className="text-center py-16">
                 <MessageSquare className="w-16 h-16 text-primary-200 mx-auto mb-4" />

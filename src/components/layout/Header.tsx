@@ -4,13 +4,16 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, MessageCircle, ArrowRight } from 'lucide-react';
+import { Menu, X, ChevronDown, User, ArrowRight } from 'lucide-react';
 import { categories } from '@/data/categories';
+import { createClient } from '@/lib/supabase/client';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,6 +21,36 @@ export default function Header() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setIsLoggedIn(true);
+        setUserName(user.user_metadata?.name || '회원');
+      } else {
+        setIsLoggedIn(false);
+        setUserName('');
+      }
+    };
+
+    checkAuth();
+
+    // 인증 상태 변경 감지
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setIsLoggedIn(false);
+        setUserName('');
+      } else if (session?.user) {
+        setIsLoggedIn(true);
+        setUserName(session.user.user_metadata?.name || '회원');
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
@@ -139,24 +172,28 @@ export default function Header() {
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center gap-3">
-            <a
-              href="http://pf.kakao.com/_stxkUn/chat"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
-                isScrolled
-                  ? 'text-primary-600 hover:bg-primary-50'
-                  : 'text-white/80 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <MessageCircle className="w-4 h-4" />
-              <span>카카오톡 상담</span>
-            </a>
+            {isLoggedIn ? (
+              <Link
+                href="/my-courses?tab=profile"
+                className="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary-500/25 hover:-translate-y-0.5 transition-all"
+              >
+                <User className="w-4 h-4" />
+                <span>마이페이지</span>
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary-500/25 hover:-translate-y-0.5 transition-all"
+              >
+                <User className="w-4 h-4" />
+                <span>간편 로그인 ㆍ간편 회원가입</span>
+              </Link>
+            )}
             <Link
-              href="/education"
+              href="/my-courses?tab=courses"
               className="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-accent-500 to-accent-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-accent-500/25 hover:-translate-y-0.5 transition-all"
             >
-              <span>수강신청</span>
+              <span>내 강의</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
@@ -259,21 +296,31 @@ export default function Header() {
               </Link>
 
               <div className="pt-4 space-y-3">
-                <a
-                  href="http://pf.kakao.com/_stxkUn/chat"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full px-4 py-3 border border-primary-200 text-primary-700 font-medium rounded-xl hover:bg-primary-50 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>카카오톡 상담</span>
-                </a>
+                {isLoggedIn ? (
+                  <Link
+                    href="/my-courses?tab=profile"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-xl"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User className="w-4 h-4" />
+                    <span>마이페이지</span>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-xl"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User className="w-4 h-4" />
+                    <span>간편 로그인 ㆍ간편 회원가입</span>
+                  </Link>
+                )}
                 <Link
-                  href="/education"
+                  href="/my-courses?tab=courses"
                   className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gradient-to-r from-accent-500 to-accent-600 text-white font-semibold rounded-xl"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <span>수강신청</span>
+                  <span>내 강의</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>

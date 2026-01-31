@@ -1,26 +1,16 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { categories, getCategoryBySlug } from '@/data/categories';
-import { courses, getCourseById, getCoursesByCategory } from '@/data/courses';
+import { getCategoryBySlug } from '@/data/categories';
+import { getPublicCourse, getPublicCoursesByCategory } from '@/lib/courses/actions';
 import CourseDetailContent from '@/components/education/CourseDetailContent';
 
 interface Props {
   params: Promise<{ category: string; courseId: string }>;
 }
 
-export async function generateStaticParams() {
-  return courses.map((course) => {
-    const category = categories.find((c) => c.id === course.categoryId);
-    return {
-      category: category?.slug || '',
-      courseId: course.id,
-    };
-  });
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { courseId } = await params;
-  const course = getCourseById(courseId);
+  const course = await getPublicCourse(courseId);
 
   if (!course) {
     return {
@@ -33,6 +23,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: course.description,
   };
 }
+
+export const dynamic = 'force-dynamic'; // 항상 최신 데이터 가져오기
 
 const gradientMap: Record<string, string> = {
   'bg-red-500': 'from-red-600 to-red-800',
@@ -48,15 +40,17 @@ const gradientMap: Record<string, string> = {
 export default async function CourseDetailPage({ params }: Props) {
   const { category: categorySlug, courseId } = await params;
   const category = getCategoryBySlug(categorySlug);
-  const course = getCourseById(courseId);
+
+  // Supabase에서 코스 정보 가져오기
+  const course = await getPublicCourse(courseId);
 
   if (!category || !course) {
     notFound();
   }
 
-  const relatedCourses = getCoursesByCategory(category.id).filter(
-    (c) => c.id !== courseId
-  );
+  // 같은 카테고리의 관련 코스 가져오기
+  const allCategoryCoursese = await getPublicCoursesByCategory(categorySlug);
+  const relatedCourses = allCategoryCoursese.filter((c) => c.id !== courseId);
 
   const gradient = gradientMap[category.color] || 'from-primary-800 to-primary-900';
 

@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { categories, getCategoryBySlug } from '@/data/categories';
-import { getCoursesByCategory } from '@/data/courses';
+import { getPublicCoursesByCategory } from '@/lib/courses/actions';
 import CategoryPageContent from '@/components/education/CategoryPageContent';
 
 interface Props {
@@ -30,6 +30,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+export const revalidate = 60; // 60초마다 재검증
+
 const gradientMap: Record<string, string> = {
   'bg-red-500': 'from-red-600 to-red-800',
   'bg-orange-500': 'from-orange-600 to-orange-800',
@@ -49,7 +51,8 @@ export default async function CategoryPage({ params }: Props) {
     notFound();
   }
 
-  const courses = getCoursesByCategory(category.id);
+  // Supabase에서 해당 카테고리의 코스 가져오기
+  const courses = await getPublicCoursesByCategory(categorySlug);
   const gradient = gradientMap[category.color] || 'from-primary-800 to-primary-900';
 
   return (

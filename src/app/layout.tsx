@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import KakaoFloatingBanner from '@/components/common/KakaoFloatingBanner';
+import LayoutWrapper from '@/components/layout/LayoutWrapper';
+import ScrollToTop from '@/components/common/ScrollToTop';
 
 export const metadata: Metadata = {
   title: '재범방지교육통합센터',
@@ -34,16 +33,12 @@ export default function RootLayout({
       <head>
         <link
           rel="stylesheet"
-          as="style"
-          crossOrigin="anonymous"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
         />
       </head>
       <body className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <KakaoFloatingBanner />
+        <LayoutWrapper>{children}</LayoutWrapper>
+        <ScrollToTop />
       </body>
     </html>
   );

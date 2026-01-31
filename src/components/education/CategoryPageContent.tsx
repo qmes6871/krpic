@@ -15,11 +15,21 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import FadeIn from '@/components/common/FadeIn';
-import { Category, Course } from '@/types';
+import { Category } from '@/types';
+
+interface CourseItem {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  duration: string;
+  instructor: string;
+  features: string[];
+}
 
 interface Props {
   category: Category;
-  courses: Course[];
+  courses: CourseItem[];
   categorySlug: string;
   gradient: string;
 }
@@ -149,8 +159,8 @@ export default function CategoryPageContent({ category, courses, categorySlug, g
             ].map((stat, index) => (
               <FadeIn key={stat.label} delay={index * 100}>
                 <div className="bg-white rounded-xl p-4 shadow-lg text-center">
-                  <div className="text-lg font-bold text-primary-900">{stat.value}</div>
-                  <div className="text-primary-500 text-sm">{stat.label}</div>
+                  <div className="text-sm font-bold text-primary-900 whitespace-nowrap">{stat.value}</div>
+                  <div className="text-primary-500 text-xs">{stat.label}</div>
                 </div>
               </FadeIn>
             ))}
@@ -176,7 +186,7 @@ export default function CategoryPageContent({ category, courses, categorySlug, g
           </FadeIn>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            {courses.map((course, index) => (
+            {[...courses].sort((a, b) => a.price - b.price).map((course, index) => (
               <FadeIn key={course.id} delay={index * 100}>
                 <Link
                   href={`/education/${categorySlug}/${course.id}`}

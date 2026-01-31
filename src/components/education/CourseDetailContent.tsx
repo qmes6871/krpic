@@ -15,37 +15,50 @@ import {
   MessageCircle,
   Zap,
   Calendar,
+  CreditCard,
+  Phone,
 } from 'lucide-react';
 import FadeIn from '@/components/common/FadeIn';
-import { Category, Course } from '@/types';
+import { Category } from '@/types';
+
+interface CourseItem {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  duration: string;
+  instructor: string;
+  features: string[];
+  detailImages?: string[];
+}
 
 interface Props {
   category: Category;
-  course: Course;
-  relatedCourses: Course[];
+  course: CourseItem;
+  relatedCourses: CourseItem[];
   categorySlug: string;
   gradient: string;
 }
 
 const curriculum = [
   {
-    title: '오리엔테이션',
-    description: '교육 안내 및 학습 목표 설정',
+    title: '교육과정 선택 후 결제',
+    description: '원하시는 교육과정을 선택하고 결제를 진행합니다.',
+    icon: CreditCard,
+  },
+  {
+    title: '교육 영상 시청',
+    description: '교육 영상을 시청합니다.',
     icon: Play,
   },
   {
-    title: '이론 교육',
-    description: '핵심 개념 및 사례 학습',
-    icon: BookOpen,
+    title: '유선 상담',
+    description: '유선 상담이 없는 교육 과정은 배제 사항입니다.',
+    icon: Phone,
   },
   {
-    title: '실습 및 토론',
-    description: '상황별 대처 방법 학습',
-    icon: MessageCircle,
-  },
-  {
-    title: '수료 평가',
-    description: '학습 내용 확인 및 수료증 발급',
+    title: '수료증 및 증명서 발급',
+    description: '교육 완료 후 수료증이 즉시 발급됩니다.',
     icon: Award,
   },
 ];
@@ -157,9 +170,12 @@ export default function CourseDetailContent({
                     </div>
                   </div>
 
-                  <button className="w-full bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white font-semibold py-4 rounded-xl mb-3 transition-all shadow-lg shadow-accent-500/25 hover:scale-[1.02]">
+                  <Link
+                    href={`/checkout/${course.id}`}
+                    className="w-full block text-center bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white font-semibold py-4 rounded-xl mb-3 transition-all shadow-lg shadow-accent-500/25 hover:scale-[1.02]"
+                  >
                     수강신청 하기
-                  </button>
+                  </Link>
                   <a
                     href="http://pf.kakao.com/_stxkUn/chat"
                     target="_blank"
@@ -204,9 +220,12 @@ export default function CourseDetailContent({
                     {course.price.toLocaleString()}원
                   </div>
                 </div>
-                <button className="bg-gradient-to-r from-accent-500 to-accent-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-accent-500/25">
+                <Link
+                  href={`/checkout/${course.id}`}
+                  className="bg-gradient-to-r from-accent-500 to-accent-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-accent-500/25"
+                >
                   수강신청
-                </button>
+                </Link>
               </div>
               <div className="flex items-center gap-4 text-sm text-primary-500">
                 <span className="flex items-center gap-1">
@@ -333,6 +352,31 @@ export default function CourseDetailContent({
           </div>
         </div>
       </section>
+
+      {/* Detail Images - Full Width */}
+      {course.detailImages && course.detailImages.length > 0 && (
+        <section className="py-16 px-4 bg-white">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-bold text-primary-900 mb-8 text-center flex items-center justify-center gap-3">
+              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                <Monitor className="w-5 h-5 text-purple-600" />
+              </div>
+              상세 정보
+            </h2>
+            <div className="space-y-6">
+              {course.detailImages.map((imageUrl, index) => (
+                <div key={index} className="rounded-2xl overflow-hidden shadow-lg">
+                  <img
+                    src={imageUrl}
+                    alt={`${course.title} 상세 이미지 ${index + 1}`}
+                    className="w-full h-auto block"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Related Courses */}
       {relatedCourses.length > 0 && (

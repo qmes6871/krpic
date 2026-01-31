@@ -65,6 +65,14 @@ export const categories: Category[] = [
     slug: 'law-compliance',
     color: 'bg-green-500',
   },
+  {
+    id: 'detention',
+    name: '구속 수감자 교육',
+    description: '구속·수감 중인 분들을 위한 재범방지교육 프로그램',
+    icon: 'Building2',
+    slug: 'detention',
+    color: 'bg-slate-500',
+  },
 ];
 
 export function getCategoryBySlug(slug: string): Category | undefined {

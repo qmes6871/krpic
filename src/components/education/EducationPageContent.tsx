@@ -21,11 +21,17 @@ import {
   Play,
 } from 'lucide-react';
 import FadeIn from '@/components/common/FadeIn';
-import { Category, Course } from '@/types';
+import { Category } from '@/types';
+
+interface CourseItem {
+  id: string;
+  title: string;
+  categoryId: string;
+}
 
 interface Props {
   categories: Category[];
-  coursesByCategory: Record<string, Course[]>;
+  coursesByCategory: Record<string, CourseItem[]>;
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -98,7 +104,7 @@ export default function EducationPageContent({ categories, coursesByCategory }: 
             <FadeIn delay={0}>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm mb-6">
                 <Shield className="w-4 h-4 text-accent-400" />
-                법원·검찰 채택 문서 공인교육
+                법원·검찰 채택 문서 교육
               </div>
             </FadeIn>
 
@@ -110,7 +116,7 @@ export default function EducationPageContent({ categories, coursesByCategory }: 
 
             <FadeIn delay={200}>
               <p className="text-lg md:text-xl text-white/80 mb-8 leading-relaxed">
-                법원, 검찰에서 인정하는 공인 재범방지교육 프로그램입니다.<br className="hidden md:block" />
+                KRPIC 재범방지교육 프로그램입니다.<br className="hidden md:block" />
                 원하시는 교육 카테고리를 선택해 주세요.
               </p>
             </FadeIn>

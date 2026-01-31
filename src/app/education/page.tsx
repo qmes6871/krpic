@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { categories } from '@/data/categories';
-import { getCoursesByCategory } from '@/data/courses';
+import { getPublicCourses, PublicCourse } from '@/lib/courses/actions';
 import EducationPageContent from '@/components/education/EducationPageContent';
 
 export const metadata: Metadata = {
@@ -8,11 +8,18 @@ export const metadata: Metadata = {
   description: '음주운전, 폭력범죄, 성범죄 등 다양한 재범방지교육 과정을 제공합니다.',
 };
 
-export default function EducationPage() {
-  // 각 카테고리별 강의 데이터 준비
-  const coursesByCategory: Record<string, ReturnType<typeof getCoursesByCategory>> = {};
+export const revalidate = 60; // 60초마다 재검증
+
+export default async function EducationPage() {
+  // Supabase에서 모든 활성화된 코스 가져오기
+  const allCourses = await getPublicCourses();
+
+  // 카테고리별로 그룹화
+  const coursesByCategory: Record<string, PublicCourse[]> = {};
   categories.forEach((category) => {
-    coursesByCategory[category.id] = getCoursesByCategory(category.id);
+    coursesByCategory[category.id] = allCourses.filter(
+      (course) => course.categoryId === category.slug
+    );
   });
 
   return (
