@@ -68,7 +68,7 @@ export default function ForgotPasswordPage() {
             <Link href="/" className="inline-flex flex-col items-center gap-3">
               <div className="relative w-14 h-14">
                 <Image
-                  src="/krpic/images/logo/logo.png"
+                  src="/images/logo/logo.png"
                   alt="KRPIC"
                   fill
                   className="object-contain"

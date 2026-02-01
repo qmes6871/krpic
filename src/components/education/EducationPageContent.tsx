@@ -182,7 +182,7 @@ export default function EducationPageContent({ categories, coursesByCategory }: 
 
           {/* Categories Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {categories.map((category, index) => {
+            {categories.filter(c => !c.hidden).map((category, index) => {
               const Icon = iconMap[category.icon];
               const courses = coursesByCategory[category.id] || [];
               const gradient = colorGradientMap[category.color] || 'from-primary-500 to-primary-600';

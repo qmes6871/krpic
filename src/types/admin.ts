@@ -20,10 +20,19 @@ export interface Course {
   features: string[];
   detail_images: string[];
   video_url: string | null;
+  certificates: string[] | null; // 발급할 증명서 ID 목록
   is_active: boolean;
   created_at: string;
   updated_at: string;
 }
+
+export interface UploadedCertificate {
+  url: string;
+  fileName: string;
+  uploadedAt: string;
+}
+
+export type UploadedCertificates = Record<string, UploadedCertificate>;
 
 export interface Enrollment {
   id: string;
@@ -40,6 +49,8 @@ export interface Enrollment {
   max_watched_position: number;
   completed_at: string | null;
   certificate_number: string | null;
+  // 업로드된 증명서
+  uploaded_certificates: UploadedCertificates | null;
   created_at: string;
   updated_at: string;
   // Joined data

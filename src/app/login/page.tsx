@@ -23,6 +23,20 @@ function LoginContent() {
     if (searchParams.get('registered') === 'true') {
       setSuccessMessage('회원가입이 완료되었습니다. 로그인해주세요.');
     }
+    const oauthError = searchParams.get('error');
+    if (oauthError) {
+      const errorMessages: Record<string, string> = {
+        naver_auth_failed: '네이버 로그인에 실패했습니다.',
+        kakao_auth_failed: '카카오 로그인에 실패했습니다.',
+        no_code: '인증 코드를 받지 못했습니다.',
+        token_failed: '인증 토큰 발급에 실패했습니다.',
+        user_info_failed: '사용자 정보를 가져오지 못했습니다.',
+        create_user_failed: '계정 생성에 실패했습니다.',
+        session_failed: '세션 생성에 실패했습니다.',
+        unknown: '알 수 없는 오류가 발생했습니다.',
+      };
+      setError(errorMessages[oauthError] || '로그인 중 오류가 발생했습니다.');
+    }
   }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -45,11 +59,11 @@ function LoginContent() {
   };
 
   const handleNaverLogin = () => {
-    alert('네이버 로그인은 준비 중입니다.');
+    window.location.href = '/api/auth/naver';
   };
 
   const handleKakaoLogin = () => {
-    alert('카카오 로그인은 준비 중입니다.');
+    window.location.href = '/api/auth/kakao';
   };
 
   return (
@@ -90,7 +104,7 @@ function LoginContent() {
             <Link href="/" className="inline-flex flex-col items-center gap-3">
               <div className="relative w-14 h-14">
                 <Image
-                  src="/krpic/images/logo/logo.png"
+                  src="/images/logo/logo.png"
                   alt="KRPIC"
                   fill
                   className="object-contain"

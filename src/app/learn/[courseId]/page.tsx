@@ -1,6 +1,6 @@
 import { redirect, notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { getUserEnrollment } from '@/lib/enrollments/actions';
+import { getUserEnrollment, getCommonVideoUrls } from '@/lib/enrollments/actions';
 import { getPublicCourse } from '@/lib/courses/actions';
 import { getCategoryBySlug } from '@/data/categories';
 import LearnPageContent from '@/components/learn/LearnPageContent';
@@ -44,11 +44,15 @@ export default async function LearnPage({ params }: Props) {
 
   const category = getCategoryBySlug(course.categoryId);
 
+  // 공통 영상 URL 가져오기
+  const commonVideoUrls = await getCommonVideoUrls();
+
   return (
     <LearnPageContent
       course={course}
       category={category}
       enrollment={enrollment}
+      commonVideoUrls={commonVideoUrls}
     />
   );
 }

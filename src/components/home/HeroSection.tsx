@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play, Shield, Award, Users, Clock, Sparkles, CheckCircle2 } from 'lucide-react';
 
@@ -15,20 +14,8 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-primary-900">
-      {/* Background Image with Overlay */}
+      {/* Background with Gradient */}
       <div className="absolute inset-0 z-0">
-        <Image
-          src="/images/hero/hero-main.jpg"
-          alt="전문 교육"
-          fill
-          className="object-cover"
-          priority
-          quality={90}
-        />
-        {/* Multi-layer gradient overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-900 via-primary-900/95 to-primary-900/70" />
-        <div className="absolute inset-0 bg-gradient-to-t from-primary-900 via-transparent to-primary-900/50" />
-
         {/* Animated gradient accent */}
         <div className="absolute inset-0 opacity-40">
           <div className="absolute top-1/4 -right-20 w-[600px] h-[600px] bg-gradient-to-br from-accent-500/30 to-transparent rounded-full blur-3xl animate-pulse-slow" />

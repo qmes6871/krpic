@@ -23,6 +23,7 @@ import { getCourses, createCourse, updateCourse, deleteCourse } from '@/lib/admi
 import { Course } from '@/types/admin';
 import { categories } from '@/data/categories';
 import { uploadImage, uploadMultipleImages } from '@/lib/supabase/storage';
+import { allCertificates, CertificateTemplate } from '@/data/certificateTemplates';
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -45,6 +46,9 @@ export default function CoursesPage() {
   const [existingDetailImages, setExistingDetailImages] = useState<string[]>([]);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const detailInputRef = useRef<HTMLInputElement>(null);
+
+  // 증명서 관련 상태
+  const [selectedCertificates, setSelectedCertificates] = useState<string[]>([]);
 
   useEffect(() => {
     loadCourses();
@@ -153,13 +157,23 @@ export default function CoursesPage() {
     setExistingDetailImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  // 이미지 상태 초기화
+  // 이미지 및 증명서 상태 초기화
   const resetImageStates = () => {
     setThumbnailFile(null);
     setThumbnailPreview('');
     setDetailFiles([]);
     setDetailPreviews([]);
     setExistingDetailImages([]);
+    setSelectedCertificates([]);
+  };
+
+  // 증명서 선택/해제 핸들러
+  const toggleCertificate = (certId: string) => {
+    setSelectedCertificates(prev =>
+      prev.includes(certId)
+        ? prev.filter(id => id !== certId)
+        : [...prev, certId]
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -212,6 +226,7 @@ export default function CoursesPage() {
         features,
         detail_images: allDetailImages,
         video_url: (formData.get('video_url') as string) || null,
+        certificates: selectedCertificates.length > 0 ? selectedCertificates : null,
         is_active: formData.get('is_active') === 'on'
       };
 
@@ -291,6 +306,8 @@ export default function CoursesPage() {
     setThumbnailFile(null);
     setDetailFiles([]);
     setDetailPreviews([]);
+    // 기존 증명서 설정
+    setSelectedCertificates(course.certificates || []);
     setShowModal(true);
   };
 
@@ -390,21 +407,6 @@ export default function CoursesPage() {
                 course.is_active ? 'border-gray-100' : 'border-red-200 bg-red-50/50'
               }`}
             >
-              {/* Thumbnail */}
-              {course.thumbnail ? (
-                <div className="h-40 bg-gray-200">
-                  <img
-                    src={course.thumbnail}
-                    alt={course.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="h-40 bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
-                  <BookOpen className="w-12 h-12 text-white/50" />
-                </div>
-              )}
-
               {/* Content */}
               <div className="p-5">
                 <div className="flex items-start justify-between gap-2 mb-2">
@@ -419,7 +421,7 @@ export default function CoursesPage() {
                   {course.description || '설명 없음'}
                 </p>
 
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-2 mb-3">
                   <span className="inline-flex items-center gap-1 px-2 py-1 bg-primary-50 text-primary-700 rounded-lg text-xs font-medium">
                     <Tag className="w-3 h-3" />
                     {getCategoryName(course.category)}
@@ -435,6 +437,18 @@ export default function CoursesPage() {
                     {formatPrice(course.price)}원
                   </span>
                 </div>
+
+                {course.updated_at && (
+                  <p className="text-xs text-gray-400 mb-3">
+                    마지막 수정: {new Date(course.updated_at).toLocaleString('ko-KR', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                )}
 
                 <div className="flex items-center gap-2">
                   <button
@@ -613,14 +627,14 @@ export default function CoursesPage() {
                     교육 영상 URL
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     name="video_url"
                     defaultValue={selectedCourse?.video_url || ''}
                     className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="https://example.com/video.mp4"
+                    placeholder="/videos/example.mp4"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    온라인 학습용 영상 URL을 입력하세요 (MP4 권장)
+                    온라인 학습용 영상 경로를 입력하세요 (예: /videos/example.mp4)
                   </p>
                 </div>
 
@@ -754,6 +768,47 @@ export default function CoursesPage() {
                     상세 이미지 추가
                   </button>
                   <p className="text-xs text-gray-400 mt-1">상세페이지 과정 특징 아래에 표시됩니다</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    발급 증명서 선택
+                  </label>
+                  <p className="text-xs text-gray-500 mb-3">
+                    이 교육과정 수료 시 발급할 증명서를 선택하세요. 선택하지 않으면 카테고리 기본값이 적용됩니다.
+                  </p>
+                  <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-xl p-2 space-y-1">
+                    {allCertificates.map((cert) => (
+                      <label
+                        key={cert.id}
+                        className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                          selectedCertificates.includes(cert.id)
+                            ? 'bg-primary-50 border border-primary-200'
+                            : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedCertificates.includes(cert.id)}
+                          onChange={() => toggleCertificate(cert.id)}
+                          className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-medium truncate ${
+                            selectedCertificates.includes(cert.id) ? 'text-primary-700' : 'text-gray-700'
+                          }`}>
+                            {cert.name}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">{cert.description}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                  {selectedCertificates.length > 0 && (
+                    <p className="text-xs text-primary-600 mt-2">
+                      {selectedCertificates.length}개 증명서 선택됨
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-3">

@@ -24,6 +24,8 @@ import {
   Save,
   Award,
   Download,
+  MessageCircle,
+  Building2,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { translateAuthError } from '@/lib/auth/errors';
@@ -552,6 +554,74 @@ function MyCoursesContent() {
                     const payment = paymentConfig[course.paymentStatus] || paymentConfig.unpaid;
                     const canLearn = course.status === 'approved' && course.paymentStatus === 'paid';
 
+                    // 수감자 교육인 경우 다른 UI 표시
+                    const isDetention = course.category === 'detention';
+
+                    if (isDetention) {
+                      const detentionStatusConfig: Record<string, { label: string; color: string; bg: string }> = {
+                        pending: { label: '신청 접수', color: 'text-yellow-700', bg: 'bg-yellow-100' },
+                        approved: { label: '교육 진행중', color: 'text-blue-700', bg: 'bg-blue-100' },
+                        rejected: { label: '신청 반려', color: 'text-red-700', bg: 'bg-red-100' },
+                        completed: { label: '수료 완료', color: 'text-green-700', bg: 'bg-green-100' },
+                      };
+                      const detentionStatus = detentionStatusConfig[course.status] || detentionStatusConfig.pending;
+
+                      return (
+                        <motion.div
+                          key={course.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex-1">
+                              <div className="flex flex-wrap items-center gap-2 mb-2">
+                                <span className="text-xs font-medium px-2 py-1 rounded-full bg-slate-100 text-slate-700 flex items-center gap-1">
+                                  <Building2 className="w-3 h-3" />
+                                  수감자 교육
+                                </span>
+                                <span className={`text-xs font-medium px-2 py-1 rounded-full ${detentionStatus.bg} ${detentionStatus.color}`}>
+                                  {detentionStatus.label}
+                                </span>
+                                <span className={`text-xs font-medium px-2 py-1 rounded-full ${payment.bg} ${payment.color}`}>
+                                  {payment.label}
+                                </span>
+                              </div>
+                              <h3 className="font-semibold text-gray-900">
+                                {course.title}
+                              </h3>
+                              <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-4 h-4" />
+                                  신청일: {new Date(course.enrolledAt).toLocaleDateString('ko-KR')}
+                                </span>
+                              </div>
+
+                              {/* 진행 안내 */}
+                              <div className="mt-3 p-3 bg-slate-50 rounded-xl">
+                                <p className="text-xs text-slate-600">
+                                  {course.status === 'pending' && '신청이 접수되었습니다. 담당자가 확인 후 연락드립니다.'}
+                                  {course.status === 'approved' && '교육이 진행 중입니다. 궁금하신 점은 문의해 주세요.'}
+                                  {course.status === 'rejected' && '신청이 반려되었습니다. 자세한 내용은 문의해 주세요.'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center">
+                              <a
+                                href="http://pf.kakao.com/_stxkUn/chat"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-yellow-900 font-medium rounded-xl hover:bg-yellow-500 transition-colors"
+                              >
+                                <MessageCircle className="w-5 h-5" />
+                                문의하기
+                              </a>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    }
+
                     return (
                       <motion.div
                         key={course.id}
@@ -631,50 +701,60 @@ function MyCoursesContent() {
                 </div>
               ) : (
                 <div className="grid gap-4">
-                  {enrolledCourses.filter(c => c.status === 'completed').map((course) => (
-                    <motion.div
-                      key={course.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
-                    >
-                      <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="flex-1">
-                          <div className="flex flex-wrap items-center gap-2 mb-2">
-                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-700">
-                              수료 완료
-                            </span>
-                            {course.certificateNumber && (
-                              <span className="text-xs text-gray-500">
-                                {course.certificateNumber}
+                  {enrolledCourses.filter(c => c.status === 'completed').map((course) => {
+                    const isDetention = course.category === 'detention';
+
+                    return (
+                      <motion.div
+                        key={course.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`bg-white rounded-2xl shadow-sm border p-6 ${isDetention ? 'border-slate-200' : 'border-gray-100'}`}
+                      >
+                        <div className="flex flex-col sm:flex-row gap-4">
+                          <div className="flex-1">
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                              {isDetention && (
+                                <span className="text-xs font-medium px-2 py-1 rounded-full bg-slate-100 text-slate-700 flex items-center gap-1">
+                                  <Building2 className="w-3 h-3" />
+                                  수감자 교육
+                                </span>
+                              )}
+                              <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700">
+                                수료 완료
                               </span>
-                            )}
+                              {course.certificateNumber && (
+                                <span className="text-xs text-gray-500">
+                                  {course.certificateNumber}
+                                </span>
+                              )}
+                            </div>
+                            <h3 className="font-semibold text-gray-900">
+                              {course.title}
+                            </h3>
+                            <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                수료일: {course.completedAt
+                                  ? new Date(course.completedAt).toLocaleDateString('ko-KR')
+                                  : new Date(course.enrolledAt).toLocaleDateString('ko-KR')
+                                }
+                              </span>
+                            </div>
                           </div>
-                          <h3 className="font-semibold text-gray-900">
-                            {course.title}
-                          </h3>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
-                              수료일: {course.completedAt
-                                ? new Date(course.completedAt).toLocaleDateString('ko-KR')
-                                : new Date(course.enrolledAt).toLocaleDateString('ko-KR')
-                              }
-                            </span>
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => setSelectedEnrollmentForCertificate(course.id)}
+                              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 font-medium rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all shadow-md"
+                            >
+                              <Download className="w-5 h-5" />
+                              수료증 다운로드
+                            </button>
                           </div>
                         </div>
-                        <div className="flex items-center">
-                          <button
-                            onClick={() => setSelectedEnrollmentForCertificate(course.id)}
-                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 font-medium rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all shadow-md"
-                          >
-                            <Download className="w-5 h-5" />
-                            수료증 다운로드
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
             </div>

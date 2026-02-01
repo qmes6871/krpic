@@ -16,10 +16,12 @@ import {
   CreditCard,
   CheckCircle2,
   Calendar,
-  MessageSquare
+  MessageSquare,
+  FileText
 } from 'lucide-react';
 import { getEnrollments, updateEnrollment, deleteEnrollment } from '@/lib/admin/actions';
 import { Enrollment, Profile, Course } from '@/types/admin';
+import CertificateUploadModal from '@/components/admin/CertificateUploadModal';
 
 type EnrollmentWithRelations = Enrollment & { user: Profile; course: Course };
 
@@ -36,6 +38,7 @@ function EnrollmentsContent() {
   const [selectedEnrollment, setSelectedEnrollment] = useState<EnrollmentWithRelations | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -320,6 +323,18 @@ function EnrollmentsContent() {
                               </button>
                             </>
                           )}
+                          {enrollment.status === 'completed' && (
+                            <button
+                              onClick={() => {
+                                setSelectedEnrollment(enrollment);
+                                setShowCertificateModal(true);
+                              }}
+                              className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                              title="증명서 관리"
+                            >
+                              <FileText className="w-5 h-5" />
+                            </button>
+                          )}
                           <button
                             onClick={() => {
                               setSelectedEnrollment(enrollment);
@@ -584,6 +599,17 @@ function EnrollmentsContent() {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Certificate Upload Modal */}
+      <AnimatePresence>
+        {showCertificateModal && selectedEnrollment && (
+          <CertificateUploadModal
+            enrollmentId={selectedEnrollment.id}
+            studentName={selectedEnrollment.user?.name || '수강생'}
+            onClose={() => setShowCertificateModal(false)}
+          />
         )}
       </AnimatePresence>
     </div>

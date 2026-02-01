@@ -235,11 +235,11 @@ export default function RegisterPage() {
   };
 
   const handleNaverRegister = () => {
-    alert('네이버 회원가입은 준비 중입니다.');
+    window.location.href = '/api/auth/naver';
   };
 
   const handleKakaoRegister = () => {
-    alert('카카오 회원가입은 준비 중입니다.');
+    window.location.href = '/api/auth/kakao';
   };
 
   return (
@@ -280,7 +280,7 @@ export default function RegisterPage() {
             <Link href="/" className="inline-flex flex-col items-center gap-3">
               <div className="relative w-14 h-14">
                 <Image
-                  src="/krpic/images/logo/logo.png"
+                  src="/images/logo/logo.png"
                   alt="KRPIC"
                   fill
                   className="object-contain"

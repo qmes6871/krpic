@@ -13,6 +13,9 @@ export interface CertificateData {
   category: string;
 }
 
+// 추가 영상 요구사항 타입
+export type AdditionalVideoRequirement = 'none' | 'cbt-only' | 'all';
+
 export interface EnrollmentWithProgress {
   id: string;
   courseId: string;
@@ -30,4 +33,18 @@ export interface EnrollmentWithProgress {
   certificateNumber: string | null;
   enrolledAt: string;
   progressPercentage: number;
+  // CBT/준법의식 영상 진도 (추가 영상이 필요한 코스용)
+  cbtLastPosition: number;
+  cbtMaxPosition: number;
+  cbtDuration: number;
+  lawLastPosition: number;
+  lawMaxPosition: number;
+  lawDuration: number;
+  // 추가 영상 필요 여부 (기존 호환성)
+  requiresAdditionalVideos: boolean;
+  // 추가 영상 요구사항 ('none' | 'cbt-only' | 'all')
+  additionalVideoRequirement: AdditionalVideoRequirement;
 }
+
+// 영상 타입
+export type VideoType = 'main' | 'cbt' | 'law';

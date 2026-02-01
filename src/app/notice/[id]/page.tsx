@@ -14,7 +14,8 @@ import {
   BookOpen,
   Pin
 } from 'lucide-react';
-import { notices, getNoticeById, noticeCategories } from '@/data/notices';
+import { getNotices, getNoticeById, incrementNoticeViews } from '@/lib/notices/actions';
+import { noticeCategories } from '@/data/notices';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -34,15 +35,9 @@ const categoryColors: Record<string, string> = {
   guide: 'bg-green-100 text-green-700',
 };
 
-export async function generateStaticParams() {
-  return notices.map((notice) => ({
-    id: notice.id,
-  }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const notice = getNoticeById(id);
+  const notice = await getNoticeById(id);
 
   if (!notice) {
     return {
@@ -68,17 +63,20 @@ function formatDate(dateString: string): string {
 
 export default async function NoticeDetailPage({ params }: Props) {
   const { id } = await params;
-  const notice = getNoticeById(id);
+  const notice = await getNoticeById(id);
 
   if (!notice) {
     notFound();
   }
 
-  // Find adjacent notices
-  const currentIndex = notices.findIndex((n) => n.id === id);
-  const prevNotice = currentIndex > 0 ? notices[currentIndex - 1] : null;
-  const nextNotice =
-    currentIndex < notices.length - 1 ? notices[currentIndex + 1] : null;
+  // Increment view count
+  await incrementNoticeViews(id);
+
+  // Get all notices for navigation
+  const allNotices = await getNotices();
+  const currentIndex = allNotices.findIndex((n) => n.id === id);
+  const prevNotice = currentIndex > 0 ? allNotices[currentIndex - 1] : null;
+  const nextNotice = currentIndex < allNotices.length - 1 ? allNotices[currentIndex + 1] : null;
 
   const categoryName = noticeCategories.find(c => c.id === notice.category)?.name || '';
 
@@ -127,7 +125,7 @@ export default async function NoticeDetailPage({ params }: Props) {
               </span>
               <span className="inline-flex items-center gap-2">
                 <Eye className="w-5 h-5" />
-                조회수 {notice.views.toLocaleString()}
+                조회수 {(notice.views + 1).toLocaleString()}
               </span>
             </div>
           </div>

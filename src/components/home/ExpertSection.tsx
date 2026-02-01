@@ -39,7 +39,7 @@ export default function ExpertSection() {
               <div className="relative bg-white rounded-3xl overflow-hidden shadow-2xl border border-primary-100">
                 <div className="aspect-[4/3] relative">
                   <img
-                    src="/krpic/images/lawyer-kim-optimized.jpg"
+                    src="/images/lawyer-kim-optimized.jpg"
                     alt="전문 변호사"
                     className="absolute inset-0 w-full h-full object-cover"
                     style={{ objectPosition: 'center 20%' }}

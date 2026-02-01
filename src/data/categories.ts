@@ -72,6 +72,7 @@ export const categories: Category[] = [
     icon: 'Building2',
     slug: 'detention',
     color: 'bg-slate-500',
+    hidden: true,
   },
 ];
 

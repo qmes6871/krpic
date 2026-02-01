@@ -15,9 +15,12 @@ import {
   Mail,
   Phone,
   Calendar,
-  CheckCircle2
+  CheckCircle2,
+  Key,
+  Eye,
+  EyeOff
 } from 'lucide-react';
-import { getMembers, updateMember, deleteMember } from '@/lib/admin/actions';
+import { getMembers, updateMember, deleteMember, updateMemberPassword } from '@/lib/admin/actions';
 import { Profile } from '@/types/admin';
 
 export default function MembersPage() {
@@ -29,6 +32,9 @@ export default function MembersPage() {
   const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -127,6 +133,22 @@ export default function MembersPage() {
       setMessage({ type: 'success', text: '회원이 삭제되었습니다.' });
     } else {
       setMessage({ type: 'error', text: result.error || '삭제에 실패했습니다.' });
+    }
+    setActionLoading(false);
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!selectedMember || !newPassword) return;
+
+    setActionLoading(true);
+    const result = await updateMemberPassword(selectedMember.id, newPassword);
+    if (result.success) {
+      setShowPasswordModal(false);
+      setNewPassword('');
+      setShowPassword(false);
+      setMessage({ type: 'success', text: `${selectedMember.name || '회원'}의 비밀번호가 변경되었습니다.` });
+    } else {
+      setMessage({ type: 'error', text: result.error || '비밀번호 변경에 실패했습니다.' });
     }
     setActionLoading(false);
   };
@@ -301,6 +323,18 @@ export default function MembersPage() {
                         <button
                           onClick={() => {
                             setSelectedMember(member);
+                            setNewPassword('');
+                            setShowPassword(false);
+                            setShowPasswordModal(true);
+                          }}
+                          className="p-2 rounded-lg text-amber-600 hover:bg-amber-50 transition-colors"
+                          title="비밀번호 변경"
+                        >
+                          <Key className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedMember(member);
                             setShowDeleteModal(true);
                           }}
                           className="p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
@@ -466,6 +500,86 @@ export default function MembersPage() {
                     className="flex-1 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50"
                   >
                     {actionLoading ? '삭제 중...' : '삭제'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Password Change Modal */}
+      <AnimatePresence>
+        {showPasswordModal && selectedMember && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowPasswordModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl w-full max-w-md p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">비밀번호 변경</h2>
+                <button
+                  onClick={() => setShowPasswordModal(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="mb-4 p-4 bg-gray-50 rounded-xl">
+                <p className="text-sm text-gray-600">
+                  <strong>{selectedMember.name || '이름 없음'}</strong>
+                </p>
+                <p className="text-sm text-gray-500">{selectedMember.email}</p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    새 비밀번호
+                  </label>
+                  <div className="relative">
+                    <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="새 비밀번호 입력 (최소 6자)"
+                      className="w-full pl-12 pr-12 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordModal(false)}
+                    className="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={handleUpdatePassword}
+                    disabled={actionLoading || newPassword.length < 6}
+                    className="flex-1 py-3 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50"
+                  >
+                    {actionLoading ? '변경 중...' : '변경'}
                   </button>
                 </div>
               </div>

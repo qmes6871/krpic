@@ -55,7 +55,7 @@ export default function AboutPage() {
       {/* Hero Section with Image */}
       <section className="relative h-[600px] md:h-[700px] overflow-hidden">
         <Image
-          src="/krpic/images/about/hero.jpg"
+          src="/images/about/hero.jpg"
           alt="KRPIC 재범방지교육통합센터"
           fill
           className="object-cover"
@@ -317,7 +317,7 @@ export default function AboutPage() {
             <div className="bg-[#3D2B1F] rounded-3xl shadow-xl p-10 flex flex-col items-center text-center">
               <div className="w-36 h-36 flex items-center justify-center mb-5">
                 <Image
-                  src="/krpic/images/unite-logo.png"
+                  src="/images/unite-logo.png"
                   alt="법률사무소 유나이트"
                   width={144}
                   height={144}

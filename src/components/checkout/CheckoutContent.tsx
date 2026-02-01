@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -11,40 +11,44 @@ import {
   Phone,
   Mail,
   FileText,
-  AlertCircle,
   ChevronRight,
   X,
   Loader2,
+  Building2,
+  Hash,
 } from 'lucide-react';
 import { PublicCourse } from '@/lib/courses/actions';
 import { Category } from '@/types';
 import { createClient } from '@/lib/supabase/client';
-import { createApprovedEnrollment } from '@/lib/enrollments/actions';
+import { loadTossPayments, TossPaymentsWidgets } from '@tosspayments/tosspayments-sdk';
 
 interface Props {
   course: PublicCourse;
   category?: Category;
 }
 
-type PaymentMethod = 'card' | 'kakaopay' | 'tosspay' | 'bank';
 type ModalType = 'terms' | 'privacy' | null;
+
+const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY!;
 
 export default function CheckoutContent({ course, category }: Props) {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [userName, setUserName] = useState('');
-  const [userPhone, setUserPhone] = useState('');
-  const [userEmail, setUserEmail] = useState('');
+  const [userId, setUserId] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     email: '',
     agreement: true,
+    inmateInstitution: '',
+    inmateName: '',
+    inmateNumber: '',
   });
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [error, setError] = useState('');
+  const [widgetsReady, setWidgetsReady] = useState(false);
+  const widgetsRef = useRef<TossPaymentsWidgets | null>(null);
 
   // 로그인 상태 확인
   useEffect(() => {
@@ -53,25 +57,63 @@ export default function CheckoutContent({ course, category }: Props) {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
-        // 로그인 페이지로 리다이렉트
         router.push(`/login?redirect=/checkout/${course.id}`);
         return;
       }
 
       setIsAuthenticated(true);
-      setUserName(user.user_metadata?.name || '');
-      setUserPhone(user.user_metadata?.phone || '');
-      setUserEmail(user.email || '');
+      setUserId(user.id);
       setFormData({
         name: user.user_metadata?.name || '',
         phone: user.user_metadata?.phone || '',
         email: user.email || '',
         agreement: true,
+        inmateInstitution: '',
+        inmateName: '',
+        inmateNumber: '',
       });
     };
 
     checkAuth();
   }, [course.id, router]);
+
+  // 토스페이먼츠 위젯 초기화
+  useEffect(() => {
+    if (!isAuthenticated || !userId) return;
+
+    const initTossPayments = async () => {
+      try {
+        const tossPayments = await loadTossPayments(TOSS_CLIENT_KEY);
+        const widgets = tossPayments.widgets({
+          customerKey: userId,
+        });
+
+        await widgets.setAmount({
+          currency: 'KRW',
+          value: course.price,
+        });
+
+        await Promise.all([
+          widgets.renderPaymentMethods({
+            selector: '#payment-method',
+            variantKey: 'DEFAULT',
+          }),
+          widgets.renderAgreement({
+            selector: '#agreement',
+            variantKey: 'AGREEMENT',
+          }),
+        ]);
+
+        widgetsRef.current = widgets;
+        setWidgetsReady(true);
+      } catch (error) {
+        console.error('토스페이먼츠 초기화 실패:', error);
+        setError('결제 모듈 로딩에 실패했습니다. 페이지를 새로고침 해주세요.');
+      }
+    };
+
+    initTossPayments();
+  }, [isAuthenticated, userId, course.price]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -85,26 +127,67 @@ export default function CheckoutContent({ course, category }: Props) {
     e.preventDefault();
     setError('');
 
-    if (!formData.agreement) {
-      alert('이용약관에 동의해주세요.');
+    if (!formData.name || !formData.phone || !formData.email) {
+      setError('주문자 정보를 모두 입력해주세요.');
+      return;
+    }
+
+    if (course.categoryId === 'detention') {
+      if (!formData.inmateInstitution || !formData.inmateName || !formData.inmateNumber) {
+        setError('수감자 정보를 모두 입력해주세요.');
+        return;
+      }
+    }
+
+    if (!widgetsRef.current) {
+      setError('결제 모듈이 로딩되지 않았습니다. 페이지를 새로고침 해주세요.');
       return;
     }
 
     setIsProcessing(true);
 
-    // 결제 완료로 가정하고 수강 등록
-    const result = await createApprovedEnrollment(course.id);
+    try {
+      // orderId: 영문, 숫자, -, _ 만 허용, 6~64자
+      const orderId = `KRPIC-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://krpic.co.kr';
 
-    if (result.success) {
-      // 학습 페이지로 이동
-      router.push(`/learn/${course.id}`);
-    } else {
-      setError(result.error || '결제 처리 중 오류가 발생했습니다.');
+      // 성공 URL에 courseId와 userId 포함
+      const baseParams = new URLSearchParams({
+        courseId: course.id,
+        userId: userId,
+      });
+
+      // 수감자 교육인 경우 추가 정보 포함
+      if (course.categoryId === 'detention') {
+        baseParams.set('detention', 'true');
+        baseParams.set('institution', formData.inmateInstitution);
+        baseParams.set('inmateName', formData.inmateName);
+        baseParams.set('inmateNumber', formData.inmateNumber);
+        baseParams.set('courseTitle', course.title);
+      }
+
+      const successUrl = `${siteUrl}/payment/success?${baseParams.toString()}`;
+
+      await widgetsRef.current.requestPayment({
+        orderId,
+        orderName: course.title,
+        customerName: formData.name,
+        customerEmail: formData.email,
+        customerMobilePhone: formData.phone.replace(/-/g, ''),
+        successUrl,
+        failUrl: `${siteUrl}/payment/fail`,
+      });
+    } catch (error: any) {
+      console.error('결제 요청 실패:', error);
+      if (error.code === 'USER_CANCEL') {
+        setError('결제가 취소되었습니다.');
+      } else {
+        setError(error.message || '결제 요청 중 오류가 발생했습니다.');
+      }
       setIsProcessing(false);
     }
   };
 
-  // 로그인 확인 중
   if (isAuthenticated === null) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -115,13 +198,6 @@ export default function CheckoutContent({ course, category }: Props) {
       </div>
     );
   }
-
-  const paymentMethods = [
-    { id: 'card', name: '신용/체크카드', icon: CreditCard },
-    { id: 'kakaopay', name: '카카오페이', icon: CreditCard },
-    { id: 'tosspay', name: '토스페이', icon: CreditCard },
-    { id: 'bank', name: '무통장입금', icon: FileText },
-  ];
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -249,65 +325,109 @@ export default function CheckoutContent({ course, category }: Props) {
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                     />
                   </div>
-                                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Payment Method */}
+            {/* Inmate Info - Only for detention courses */}
+            {course.categoryId === 'detention' && (
+              <div className="bg-white rounded-2xl p-6 shadow-sm">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-blue-600" />
+                  수감자 정보
+                </h2>
+                <p className="text-sm text-gray-500 mb-4">
+                  수감자 교육 진행을 위해 아래 정보를 정확히 입력해주세요.
+                </p>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      수감중인 교정기관 <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="text"
+                        name="inmateInstitution"
+                        value={formData.inmateInstitution}
+                        onChange={handleInputChange}
+                        placeholder="예: 서울구치소, 수원구치소"
+                        required
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      수감자 성함 <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="text"
+                        name="inmateName"
+                        value={formData.inmateName}
+                        onChange={handleInputChange}
+                        placeholder="수감자의 실명을 입력하세요"
+                        required
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      수감번호 <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="text"
+                        name="inmateNumber"
+                        value={formData.inmateNumber}
+                        onChange={handleInputChange}
+                        placeholder="수감번호를 입력하세요"
+                        required
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Payment Method - Toss Payments Widget */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-blue-600" />
                 결제 수단
               </h2>
-              <div className="grid grid-cols-2 gap-3">
-                {paymentMethods.map((method) => (
-                  <button
-                    key={method.id}
-                    type="button"
-                    onClick={() => setPaymentMethod(method.id as PaymentMethod)}
-                    className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
-                      paymentMethod === method.id
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <method.icon
-                      className={`w-5 h-5 ${
-                        paymentMethod === method.id ? 'text-blue-600' : 'text-gray-400'
-                      }`}
-                    />
-                    <span
-                      className={`font-medium ${
-                        paymentMethod === method.id ? 'text-blue-600' : 'text-gray-700'
-                      }`}
-                    >
-                      {method.name}
-                    </span>
-                    {paymentMethod === method.id && (
-                      <CheckCircle className="w-5 h-5 text-blue-600 ml-auto" />
-                    )}
-                  </button>
-                ))}
+              <div id="payment-method" className="min-h-[200px]">
+                {!widgetsReady && (
+                  <div className="flex items-center justify-center h-[200px]">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Agreement */}
+            {/* Agreement - Toss Payments Widget */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="agreement"
-                  checked={formData.agreement}
-                  onChange={handleInputChange}
-                  className="w-5 h-5 mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
+              <div id="agreement">
+                {!widgetsReady && (
+                  <div className="flex items-center justify-center h-[100px]">
+                    <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Additional Terms */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="flex items-start gap-3">
                 <span className="text-sm text-gray-600">
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setActiveModal('terms');
-                    }}
+                    onClick={() => setActiveModal('terms')}
                     className="font-medium text-blue-600 hover:text-blue-800 underline underline-offset-2"
                   >
                     이용약관
@@ -315,18 +435,14 @@ export default function CheckoutContent({ course, category }: Props) {
                   {' '}및{' '}
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setActiveModal('privacy');
-                    }}
+                    onClick={() => setActiveModal('privacy')}
                     className="font-medium text-blue-600 hover:text-blue-800 underline underline-offset-2"
                   >
                     개인정보 처리방침
                   </button>
-                  에 동의합니다.
-                  <span className="text-red-500 ml-1">*</span>
+                  을 확인해 주세요.
                 </span>
-              </label>
+              </div>
             </div>
           </div>
 
@@ -361,7 +477,7 @@ export default function CheckoutContent({ course, category }: Props) {
 
               <button
                 onClick={handleSubmit}
-                disabled={isProcessing}
+                disabled={isProcessing || !widgetsReady}
                 className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-500/25 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
               >
                 {isProcessing ? (
@@ -385,7 +501,7 @@ export default function CheckoutContent({ course, category }: Props) {
 
               <div className="mt-4 flex items-center gap-2 text-sm text-gray-500">
                 <Shield className="w-4 h-4" />
-                <span>안전한 결제 시스템</span>
+                <span>토스페이먼츠 안전결제</span>
               </div>
             </div>
           </div>

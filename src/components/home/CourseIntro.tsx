@@ -79,7 +79,7 @@ export default function CourseIntro() {
             맞춤형 <span className="gradient-text">재범방지교육</span>
           </h2>
           <p className="text-lg text-primary-600 max-w-2xl mx-auto">
-            다양한 교육 과정을 통해 재범 예방과 성공적인 사회 복귀를 지원합니다
+            양형자료 및 감형자료가 필요하신 분을 위해 준비했습니다
           </p>
         </motion.div>
 
@@ -91,7 +91,7 @@ export default function CourseIntro() {
           viewport={{ once: true }}
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
         >
-          {categories.map((category) => {
+          {categories.filter(c => !c.hidden).map((category) => {
             const Icon = iconMap[category.icon];
             const gradient = colorGradientMap[category.color] || 'from-primary-500 to-primary-600';
             const courses = getCoursesByCategory(category.id);

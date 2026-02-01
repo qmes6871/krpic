@@ -130,12 +130,17 @@ export default function CategoryPageContent({ category, courses, categorySlug, g
 
             {/* Stats */}
             <div className="hidden lg:grid grid-cols-2 gap-4">
-              {[
+              {(categorySlug === 'detention' ? [
+                { icon: Shield, value: '법원 양형자료 채택', label: '수료증 발급' },
+                { icon: Monitor, value: '오프라인 교육', label: '수감자를 위한 교육 시스템' },
+                { icon: Award, value: '재판부에 제출까지', label: '문서를 대신 제출' },
+                { icon: Zap, value: '전문 강사', label: '체계적인 교육' },
+              ] : [
                 { icon: Shield, value: '법원 양형자료 채택', label: '수료증 발급' },
                 { icon: Monitor, value: '온라인', label: '24시간 수강 가능' },
                 { icon: Award, value: '즉시 발급', label: '수료증 자동 발급' },
                 { icon: Zap, value: '전문 강사', label: '체계적인 교육' },
-              ].map((stat, index) => (
+              ]).map((stat, index) => (
                 <FadeIn key={stat.label} delay={200 + index * 100} direction="right">
                   <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-5 hover:bg-white/15 transition-all hover:scale-105">
                     <stat.icon className="w-7 h-7 text-white mb-3" />
@@ -153,10 +158,13 @@ export default function CategoryPageContent({ category, courses, categorySlug, g
       <section className="lg:hidden -mt-8 relative z-10 px-4">
         <div className="container-custom">
           <div className="grid grid-cols-2 gap-3">
-            {[
+            {(categorySlug === 'detention' ? [
+              { value: '법원 양형자료 채택', label: '수료증' },
+              { value: '오프라인 교육', label: '수감자를 위한 교육' },
+            ] : [
               { value: '법원 양형자료 채택', label: '수료증' },
               { value: '온라인', label: '24시간 수강' },
-            ].map((stat, index) => (
+            ]).map((stat, index) => (
               <FadeIn key={stat.label} delay={index * 100}>
                 <div className="bg-white rounded-xl p-4 shadow-lg text-center">
                   <div className="text-sm font-bold text-primary-900 whitespace-nowrap">{stat.value}</div>
@@ -177,7 +185,7 @@ export default function CategoryPageContent({ category, courses, categorySlug, g
                 교육과정 선택
               </span>
               <h2 className="text-3xl md:text-4xl font-bold text-primary-900 mb-4">
-                나에게 맞는 교육을 선택하세요
+                {categorySlug === 'detention' ? '수감자에게 맞는 교육을 선택하세요' : '나에게 맞는 교육을 선택하세요'}
               </h2>
               <p className="text-primary-600 max-w-2xl mx-auto">
                 전문 강사진이 설계한 체계적인 교육 프로그램으로 성공적인 이수를 지원합니다
@@ -283,12 +291,17 @@ export default function CategoryPageContent({ category, courses, categorySlug, g
             </FadeIn>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
+              {(categorySlug === 'detention' ? [
+                { icon: Shield, title: '법원·검찰 채택 문서', desc: '공인 재범방지교육 수료증', color: 'bg-blue-500' },
+                { icon: Monitor, title: '오프라인 수강', desc: '수감자를 위한 교육 시스템', color: 'bg-violet-500' },
+                { icon: User, title: '전문 강사진', desc: '체계적인 커리큘럼', color: 'bg-pink-500' },
+                { icon: Award, title: '재판부에 제출까지', desc: '수감자를 위해, 문서를 대신 제출', color: 'bg-amber-500' },
+              ] : [
                 { icon: Shield, title: '법원·검찰 채택 문서', desc: '공인 재범방지교육 수료증', color: 'bg-blue-500' },
                 { icon: Monitor, title: '온라인 수강', desc: '언제 어디서나 24시간', color: 'bg-violet-500' },
                 { icon: User, title: '전문 강사진', desc: '체계적인 커리큘럼', color: 'bg-pink-500' },
                 { icon: Award, title: '즉시 발급', desc: '수료 후 바로 수료증', color: 'bg-amber-500' },
-              ].map((item, index) => (
+              ]).map((item, index) => (
                 <FadeIn key={item.title} delay={index * 100}>
                   <div className="group text-center">
                     <div className={`w-16 h-16 ${item.color} rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform shadow-lg`}>
@@ -314,7 +327,7 @@ export default function CategoryPageContent({ category, courses, categorySlug, g
         <div className="container-custom relative text-center">
           <FadeIn>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              지금 바로 교육을 시작하세요
+              {categorySlug === 'detention' ? '지금 바로 수감자를 위한 양형자료를 준비해보세요' : '지금 바로 교육을 시작하세요'}
             </h2>
           </FadeIn>
           <FadeIn delay={100}>

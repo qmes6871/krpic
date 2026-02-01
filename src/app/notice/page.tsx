@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -17,7 +17,9 @@ import {
   Pin,
   ArrowUpRight
 } from 'lucide-react';
-import { notices, noticeCategories } from '@/data/notices';
+import { getNotices } from '@/lib/notices/actions';
+import { noticeCategories } from '@/data/notices';
+import { Notice } from '@/types';
 
 const categoryIcons: Record<string, React.ReactNode> = {
   all: <Layers className="w-4 h-4" />,
@@ -57,8 +59,25 @@ function formatRelativeDate(dateString: string): string {
 }
 
 export default function NoticePage() {
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    loadNotices();
+  }, []);
+
+  const loadNotices = async () => {
+    try {
+      const data = await getNotices();
+      setNotices(data);
+    } catch (error) {
+      console.error('Failed to load notices:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredNotices = notices
     .filter(notice => {
@@ -75,6 +94,44 @@ export default function NoticePage() {
     });
 
   const importantNotices = notices.filter(n => n.important).slice(0, 2);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-primary-50">
+        {/* Hero Section */}
+        <section className="relative h-[400px] md:h-[500px] overflow-hidden bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-10 left-20 w-64 h-64 bg-secondary-500/20 rounded-full blur-3xl animate-blob" />
+            <div className="absolute bottom-10 right-20 w-80 h-80 bg-accent-500/20 rounded-full blur-3xl animate-blob animation-delay-2000" />
+          </div>
+          <div className="relative h-full flex items-center">
+            <div className="container-custom">
+              <div className="max-w-3xl md:max-w-none md:text-center md:mx-auto">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-sm mb-6">
+                  <Megaphone className="w-4 h-4" />
+                  KRPIC 소식을 전해드립니다
+                </span>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+                  공지<span className="text-accent-400">사항</span>
+                </h1>
+                <p className="text-lg md:text-xl text-white/80">
+                  센터의 새로운 소식과 업데이트를 확인하세요
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="container-custom py-12">
+          <div className="animate-pulse space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-32 bg-white rounded-2xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-primary-50">
@@ -110,46 +167,48 @@ export default function NoticePage() {
       </section>
 
       {/* Featured/Important Notices */}
-      <section className="relative -mt-16 z-10 px-4 mb-8">
-        <div className="container-custom">
-          <div className="grid md:grid-cols-2 gap-4">
-            {importantNotices.map((notice, index) => (
-              <Link key={notice.id} href={`/notice/${notice.id}`}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="group relative overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-accent-500 to-secondary-500 rounded-2xl opacity-90 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative p-6 md:p-8">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/20 backdrop-blur-sm rounded-full text-white text-xs font-medium">
-                            <Pin className="w-3 h-3" />
-                            중요
-                          </span>
-                          <span className="text-white/70 text-sm">
-                            {formatRelativeDate(notice.date)}
-                          </span>
+      {importantNotices.length > 0 && (
+        <section className="relative -mt-16 z-10 px-4 mb-8">
+          <div className="container-custom">
+            <div className="grid md:grid-cols-2 gap-4">
+              {importantNotices.map((notice, index) => (
+                <Link key={notice.id} href={`/notice/${notice.id}`}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="group relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-accent-500 to-secondary-500 rounded-2xl opacity-90 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative p-6 md:p-8">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/20 backdrop-blur-sm rounded-full text-white text-xs font-medium">
+                              <Pin className="w-3 h-3" />
+                              중요
+                            </span>
+                            <span className="text-white/70 text-sm">
+                              {formatRelativeDate(notice.date)}
+                            </span>
+                          </div>
+                          <h3 className="text-lg md:text-xl font-bold text-white mb-2 group-hover:underline underline-offset-4">
+                            {notice.title}
+                          </h3>
+                          <p className="text-white/80 text-sm line-clamp-2">
+                            {notice.content.substring(0, 100)}...
+                          </p>
                         </div>
-                        <h3 className="text-lg md:text-xl font-bold text-white mb-2 group-hover:underline underline-offset-4">
-                          {notice.title}
-                        </h3>
-                        <p className="text-white/80 text-sm line-clamp-2">
-                          {notice.content.substring(0, 100)}...
-                        </p>
+                        <ArrowUpRight className="w-6 h-6 text-white/60 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all flex-shrink-0" />
                       </div>
-                      <ArrowUpRight className="w-6 h-6 text-white/60 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all flex-shrink-0" />
                     </div>
-                  </div>
-                </motion.div>
-              </Link>
-            ))}
+                  </motion.div>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Filter & Search */}
       <section className="px-4 mb-8">

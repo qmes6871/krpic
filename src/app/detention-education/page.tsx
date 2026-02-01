@@ -128,7 +128,7 @@ export default function DetentionEducationPage() {
       {/* Hero Section with Image */}
       <section className="relative h-[600px] md:h-[700px] overflow-hidden">
         <Image
-          src="/krpic/images/detention/hero.jpg"
+          src="/images/detention/hero.jpg"
           alt="구속 수감자 교육"
           fill
           className="object-cover"
@@ -262,58 +262,181 @@ export default function DetentionEducationPage() {
             </p>
           </motion.div>
 
-          <div className="grid lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-            {courses.map((course, index) => (
-              <motion.div
-                key={course.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="group"
-              >
-                <div className="h-full bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border-2 border-primary-100 transition-all duration-300 hover:-translate-y-2 relative">
-
-                  {/* Course Header */}
-                  <div className={`bg-gradient-to-br ${course.gradient} p-6 relative overflow-hidden`}>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            <div style={{ opacity: 1, transform: 'translate3d(0px, 0px, 0px)', transition: 'opacity 0.6s ease-out, transform 0.6s ease-out' }}>
+              <Link className="group block h-full" href="/education/detention/b5ff4ad3-d24b-457a-a0ab-d1d0866a73bf">
+                <div className="h-full bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-primary-100 transition-all duration-300 hover:-translate-y-2">
+                  <div className="bg-gradient-to-br from-primary-800 to-primary-900 p-6 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                      <span className="text-white text-xs font-semibold">양형자료 8종 포함</span>
+                    </div>
                     <div className="relative">
-                      <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-4">
-                        <course.icon className="w-7 h-7 text-white" />
+                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mb-4">
+                        <BookOpen className="w-6 h-6 text-white" />
                       </div>
-                      <h3 className="text-xl font-bold text-white mb-2">{course.title}</h3>
-                      <div className="text-3xl font-bold text-white">
-                        {course.price.toLocaleString()}원
+                      <h3 className="text-xl font-bold text-white mb-2 group-hover:translate-x-1 transition-transform">수감자 교육 기본과정</h3>
+                      <div className="flex items-center gap-4 text-white/80 text-sm">
+                        <span className="flex items-center gap-1"><Clock className="w-4 h-4" />1시간</span>
+                        <span className="flex items-center gap-1"><Users className="w-4 h-4" />전문 상담사</span>
                       </div>
                     </div>
                   </div>
-
-                  {/* Course Body */}
                   <div className="p-6">
-                    <div className="text-sm font-medium text-secondary-600 mb-4">
-                      포함 내역 ({course.features.length}개)
-                    </div>
-
-                    <ul className="space-y-2.5 mb-6 max-h-[400px] overflow-y-auto pr-2">
-                      {course.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-sm text-primary-700">
-                          <CheckCircle className="w-4 h-4 text-secondary-500 flex-shrink-0 mt-0.5" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
+                    <p className="text-primary-600 mb-6 line-clamp-2">구속 수감자를 위한 기본 재범방지교육 과정입니다.</p>
+                    <ul className="space-y-2 mb-4">
+                      <li className="flex items-center gap-2 text-sm text-primary-700">
+                        <div className="w-5 h-5 bg-secondary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-3 h-3 text-secondary-600" />
+                        </div>
+                        재범방지교육 수료증
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-primary-700">
+                        <div className="w-5 h-5 bg-secondary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-3 h-3 text-secondary-600" />
+                        </div>
+                        인지행동개선훈련 교육 수료증
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-primary-700">
+                        <div className="w-5 h-5 bg-secondary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-3 h-3 text-secondary-600" />
+                        </div>
+                        준법의식교육 수료증
+                      </li>
                     </ul>
-
-                    <Link
-                      href={`/detention-education/${course.id}`}
-                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-3.5 bg-primary-900 hover:bg-primary-800 text-white font-semibold rounded-xl transition-colors"
-                    >
-                      자세히 보기
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
+                    <div className="mb-6 text-center">
+                      <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-100 text-primary-700 text-sm font-medium rounded-full">+ 외 5개 양형자료 더 포함</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-4 border-t border-primary-100">
+                      <div>
+                        <span className="text-sm text-primary-500">수강료</span>
+                        <div className="text-2xl font-bold text-primary-900">150,000원</div>
+                      </div>
+                      <div className="inline-flex items-center gap-2 px-5 py-3 bg-primary-900 text-white font-medium rounded-xl group-hover:bg-primary-800 transition-colors">
+                        자세히 보기
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </motion.div>
-            ))}
+              </Link>
+            </div>
+            <div style={{ opacity: 1, transform: 'translate3d(0px, 0px, 0px)', transition: 'opacity 0.6s ease-out 100ms, transform 0.6s ease-out' }}>
+              <Link className="group block h-full" href="/education/detention/30361769-10d2-42bf-a8fb-11cf04c6d38c">
+                <div className="h-full bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-primary-100 transition-all duration-300 hover:-translate-y-2">
+                  <div className="bg-gradient-to-br from-primary-800 to-primary-900 p-6 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                      <span className="text-white text-xs font-semibold">양형자료 13종 포함</span>
+                    </div>
+                    <div className="relative">
+                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mb-4">
+                        <BookOpen className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-2 group-hover:translate-x-1 transition-transform">수감자 교육 효율과정</h3>
+                      <div className="flex items-center gap-4 text-white/80 text-sm">
+                        <span className="flex items-center gap-1"><Clock className="w-4 h-4" />1시간</span>
+                        <span className="flex items-center gap-1"><Users className="w-4 h-4" />전문 상담사</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <p className="text-primary-600 mb-6 line-clamp-2">구속 수감자를 위한 심화 교육과 전문 상담을 포함한 효율 과정입니다.</p>
+                    <ul className="space-y-2 mb-4">
+                      <li className="flex items-center gap-2 text-sm text-primary-700">
+                        <div className="w-5 h-5 bg-secondary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-3 h-3 text-secondary-600" />
+                        </div>
+                        재범방지교육 수료증
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-primary-700">
+                        <div className="w-5 h-5 bg-secondary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-3 h-3 text-secondary-600" />
+                        </div>
+                        인지행동개선훈련 교육 수료증
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-primary-700">
+                        <div className="w-5 h-5 bg-secondary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-3 h-3 text-secondary-600" />
+                        </div>
+                        준법의식교육 수료증
+                      </li>
+                    </ul>
+                    <div className="mb-6 text-center">
+                      <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-100 text-primary-700 text-sm font-medium rounded-full">+ 외 10개 양형자료 더 포함</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-4 border-t border-primary-100">
+                      <div>
+                        <span className="text-sm text-primary-500">수강료</span>
+                        <div className="text-2xl font-bold text-primary-900">250,000원</div>
+                      </div>
+                      <div className="inline-flex items-center gap-2 px-5 py-3 bg-primary-900 text-white font-medium rounded-xl group-hover:bg-primary-800 transition-colors">
+                        자세히 보기
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </div>
+            <div className="md:col-span-2 max-w-lg mx-auto w-full" style={{ opacity: 1, transform: 'translate3d(0px, 0px, 0px)', transition: 'opacity 0.6s ease-out 200ms, transform 0.6s ease-out' }}>
+              <Link className="group block h-full" href="/education/detention/e0fa5755-037a-4755-aa8f-9e380cb91844">
+                <div className="h-full bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-primary-100 transition-all duration-300 hover:-translate-y-2">
+                  <div className="bg-gradient-to-br from-primary-800 to-primary-900 p-6 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                      <span className="text-white text-xs font-semibold">양형자료 19종 포함</span>
+                    </div>
+                    <div className="relative">
+                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mb-4">
+                        <BookOpen className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-2 group-hover:translate-x-1 transition-transform">수감자 교육 통합과정</h3>
+                      <div className="flex items-center gap-4 text-white/80 text-sm">
+                        <span className="flex items-center gap-1"><Clock className="w-4 h-4" />1시간</span>
+                        <span className="flex items-center gap-1"><Users className="w-4 h-4" />전문 상담사</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <p className="text-primary-600 mb-6 line-clamp-2">구속 수감자를 위한 종합 교육 프로그램으로 모든 지원을 포함합니다.</p>
+                    <ul className="space-y-2 mb-4">
+                      <li className="flex items-center gap-2 text-sm text-primary-700">
+                        <div className="w-5 h-5 bg-secondary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-3 h-3 text-secondary-600" />
+                        </div>
+                        재범방지교육 수료증
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-primary-700">
+                        <div className="w-5 h-5 bg-secondary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-3 h-3 text-secondary-600" />
+                        </div>
+                        인지행동개선훈련 교육 수료증
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-primary-700">
+                        <div className="w-5 h-5 bg-secondary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-3 h-3 text-secondary-600" />
+                        </div>
+                        준법의식교육 수료증
+                      </li>
+                    </ul>
+                    <div className="mb-6 text-center">
+                      <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-100 text-primary-700 text-sm font-medium rounded-full">+ 외 16개 양형자료 더 포함</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-4 border-t border-primary-100">
+                      <div>
+                        <span className="text-sm text-primary-500">수강료</span>
+                        <div className="text-2xl font-bold text-primary-900">350,000원</div>
+                      </div>
+                      <div className="inline-flex items-center gap-2 px-5 py-3 bg-primary-900 text-white font-medium rounded-xl group-hover:bg-primary-800 transition-colors">
+                        자세히 보기
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </div>
           </div>
         </div>
       </section>

@@ -17,6 +17,9 @@ import {
   Calendar,
   CreditCard,
   Phone,
+  ClipboardList,
+  FileCheck,
+  Send,
 } from 'lucide-react';
 import FadeIn from '@/components/common/FadeIn';
 import { Category } from '@/types';
@@ -60,6 +63,29 @@ const curriculum = [
     title: '수료증 및 증명서 발급',
     description: '교육 완료 후 수료증이 즉시 발급됩니다.',
     icon: Award,
+  },
+];
+
+const detentionCurriculum = [
+  {
+    title: '교육 신청',
+    description: '수감자의 보호자가 교육을 신청합니다.',
+    icon: ClipboardList,
+  },
+  {
+    title: '교육 내용 전달',
+    description: '교육 배정 후 교육 내용을 수감자에게 전달합니다.',
+    icon: FileCheck,
+  },
+  {
+    title: '수료증 발급',
+    description: '수감자의 교육 소감문을 받아 수료증 및 증명서를 발급합니다.',
+    icon: Award,
+  },
+  {
+    title: '양형자료 제출',
+    description: '재범방지교육통합센터에서 발급한 양형자료를 재판부에 제출합니다.',
+    icon: Send,
   },
 ];
 
@@ -187,12 +213,17 @@ export default function CourseDetailContent({
                   </a>
 
                   <div className="mt-6 pt-6 border-t border-primary-100 space-y-3">
-                    {[
+                    {(categorySlug === 'detention' ? [
+                      { icon: Shield, text: '법원·검찰 채택 문서' },
+                      { icon: Award, text: '수료증 및 증명서 발급' },
+                      { icon: Send, text: '재판부 제출 대행' },
+                      { icon: MessageCircle, text: '24시간 카카오톡 상담' },
+                    ] : [
                       { icon: Shield, text: '법원·검찰 채택 문서' },
                       { icon: Award, text: '수료증 즉시 발급' },
                       { icon: Monitor, text: '온라인 24시간 수강' },
                       { icon: Clock, text: '1년간 자유 수강' },
-                    ].map((item) => (
+                    ]).map((item) => (
                       <div key={item.text} className="flex items-center gap-3 text-primary-600">
                         <div className="w-8 h-8 bg-secondary-100 rounded-lg flex items-center justify-center flex-shrink-0">
                           <item.icon className="w-4 h-4 text-secondary-600" />
@@ -286,7 +317,7 @@ export default function CourseDetailContent({
                     교육 과정
                   </h2>
                   <div className="space-y-4">
-                    {curriculum.map((item, index) => (
+                    {(categorySlug === 'detention' ? detentionCurriculum : curriculum).map((item, index) => (
                       <FadeIn key={index} delay={index * 100}>
                         <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-primary-50 to-transparent rounded-2xl hover:from-primary-100 transition-colors group">
                           <div className={`w-14 h-14 bg-gradient-to-br ${gradient} rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-lg`}>
@@ -334,12 +365,17 @@ export default function CourseDetailContent({
                 <div className="bg-gradient-to-br from-primary-900 to-primary-800 rounded-3xl p-6 text-white">
                   <h3 className="font-bold mb-4">빠른 안내</h3>
                   <ul className="space-y-3 text-sm text-white/80">
-                    {[
+                    {(categorySlug === 'detention' ? [
+                      '보호자가 대신 신청 가능',
+                      '수감자에게 교육 내용 전달',
+                      '소감문 작성 후 수료증 발급',
+                      '양형자료 재판부 제출 대행',
+                    ] : [
                       '결제 후 즉시 수강 가능',
                       'PC, 모바일 모두 지원',
                       '진도율 자동 저장',
                       '수료증 PDF 다운로드',
-                    ].map((text, index) => (
+                    ]).map((text, index) => (
                       <li key={index} className="flex items-center gap-2">
                         <CheckCircle className="w-4 h-4 text-accent-400" />
                         {text}
@@ -438,12 +474,12 @@ export default function CourseDetailContent({
         <div className="container-custom relative text-center">
           <FadeIn>
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              지금 바로 교육을 시작하세요
+              {categorySlug === 'detention' ? '지금 바로 수감자를 위한 양형자료를 준비하세요' : '지금 바로 교육을 시작하세요'}
             </h2>
           </FadeIn>
           <FadeIn delay={100}>
             <p className="text-white/70 mb-8 max-w-xl mx-auto">
-              전문 상담사가 상황에 맞는 최적의 교육과정을 안내해 드립니다
+              {categorySlug === 'detention' ? '전문 상담사가 수감자에게 맞는 최적의 교육과정을 안내해 드립니다' : '전문 상담사가 상황에 맞는 최적의 교육과정을 안내해 드립니다'}
             </p>
           </FadeIn>
           <FadeIn delay={200}>

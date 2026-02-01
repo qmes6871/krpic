@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { categories, getCategoryBySlug } from '@/data/categories';
 import { getPublicCoursesByCategory } from '@/lib/courses/actions';
 import CategoryPageContent from '@/components/education/CategoryPageContent';
+import { categoryMetadata, siteConfig } from '@/lib/seo/config';
 
 interface Props {
   params: Promise<{ category: string }>;
@@ -24,9 +25,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  return {
-    title: `${category.name} 교육 - KRPIC 재범방지교육통합센터`,
+  const meta = categoryMetadata[categorySlug] || {
+    title: `${category.name} 교육 | KRPIC 재범방지교육통합센터`,
     description: category.description,
+  };
+
+  return {
+    title: meta.title,
+    description: meta.description,
+    keywords: [
+      category.name,
+      `${category.name} 교육`,
+      `${category.name} 재범방지교육`,
+      '재범방지교육',
+      '수강명령',
+      '이수명령',
+    ],
+    openGraph: {
+      title: meta.title,
+      description: meta.description,
+      url: `${siteConfig.url}/education/${categorySlug}`,
+      type: 'website',
+    },
+    alternates: {
+      canonical: `${siteConfig.url}/education/${categorySlug}`,
+    },
   };
 }
 

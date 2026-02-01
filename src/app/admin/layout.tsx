@@ -13,7 +13,11 @@ import {
   Menu,
   X,
   ChevronRight,
-  Home
+  Home,
+  FileText,
+  Bell,
+  MessageSquare,
+  BarChart3
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -22,6 +26,10 @@ const menuItems = [
   { href: '/admin/members', label: '회원 관리', icon: Users },
   { href: '/admin/courses', label: '교육 프로그램', icon: BookOpen },
   { href: '/admin/enrollments', label: '수강 신청 관리', icon: ClipboardList },
+  { href: '/admin/certificates', label: '증명서 발급', icon: FileText },
+  { href: '/admin/notices', label: '공지사항 관리', icon: Bell },
+  { href: '/admin/reviews', label: '수강생 후기', icon: MessageSquare },
+  { href: '/admin/analytics', label: '접속자 통계', icon: BarChart3 },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -113,7 +121,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="h-16 flex items-center gap-3 px-6 border-b border-gray-200">
           <div className="relative w-8 h-8">
             <Image
-              src="/krpic/images/logo/logo.png"
+              src="/images/logo/logo.png"
               alt="KRPIC"
               fill
               className="object-contain"

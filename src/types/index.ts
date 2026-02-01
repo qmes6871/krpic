@@ -5,6 +5,7 @@ export interface Category {
   icon: string;
   slug: string;
   color: string;
+  hidden?: boolean;
 }
 
 export interface Course {

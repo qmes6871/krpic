@@ -67,7 +67,7 @@ export default function Header() {
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative w-10 h-10 lg:w-12 lg:h-12">
               <Image
-                src="/krpic/images/logo/logo.png"
+                src="/images/logo/logo.png"
                 alt="재범방지교육통합센터"
                 fill
                 className="object-contain"
@@ -80,7 +80,7 @@ export default function Header() {
               }`}>
                 KRPIC
               </span>
-              <span className={`hidden sm:block text-xs transition-colors ${
+              <span className={`text-[10px] sm:text-xs transition-colors ${
                 isScrolled ? 'text-primary-500' : 'text-white/70'
               }`}>
                 재범방지교육통합센터
@@ -114,7 +114,7 @@ export default function Header() {
                     transition={{ duration: 0.2 }}
                     className="absolute top-full left-0 w-64 bg-white/95 backdrop-blur-xl shadow-xl shadow-black/10 rounded-2xl py-3 mt-2 border border-gray-100"
                   >
-                    {categories.map((category) => (
+                    {categories.filter(c => !c.hidden).map((category) => (
                       <Link
                         key={category.id}
                         href={`/education/${category.slug}`}
@@ -250,7 +250,7 @@ export default function Header() {
                       className="overflow-hidden"
                     >
                       <div className="pl-4 py-2 space-y-1">
-                        {categories.map((category) => (
+                        {categories.filter(c => !c.hidden).map((category) => (
                           <Link
                             key={category.id}
                             href={`/education/${category.slug}`}

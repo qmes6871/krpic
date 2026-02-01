@@ -1,25 +1,85 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import ScrollToTop from '@/components/common/ScrollToTop';
+import { siteConfig, pageMetadata } from '@/lib/seo/config';
+import { OrganizationJsonLd, WebsiteJsonLd, LocalBusinessJsonLd, ServiceJsonLd, WebPageJsonLd, ImageObjectJsonLd, ProfessionalServiceJsonLd } from '@/components/seo/JsonLd';
+import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
+import PageTracker from '@/components/analytics/PageTracker';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#1e3a5f',
+};
 
 export const metadata: Metadata = {
-  title: '재범방지교육통합센터',
-  description: '법원, 검찰 인정 공인 재범방지교육 전문기관. 음주운전, 폭력범죄, 성범죄 등 다양한 재범방지교육 프로그램을 제공합니다.',
-  keywords: '재범방지교육, 음주운전교육, 폭력예방교육, 성범죄예방교육, 수강명령, 이수명령',
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: pageMetadata.home.title,
+    template: '%s | 재범방지교육통합센터',
+  },
+  description: pageMetadata.home.description,
+  keywords: siteConfig.keywords,
+  authors: [{ name: siteConfig.name }],
+  creator: siteConfig.name,
+  publisher: siteConfig.name,
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   icons: {
     icon: [
-      { url: '/krpic/favicon.ico', sizes: 'any' },
-      { url: '/krpic/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/krpic/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
     ],
-    apple: '/krpic/apple-touch-icon.png',
+    apple: '/apple-touch-icon.png',
   },
+  manifest: '/manifest.json',
   openGraph: {
-    title: '재범방지교육통합센터',
-    description: '법원, 검찰 인정 공인 재범방지교육 전문기관',
     type: 'website',
     locale: 'ko_KR',
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    title: pageMetadata.home.title,
+    description: pageMetadata.home.description,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: siteConfig.name,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: pageMetadata.home.title,
+    description: pageMetadata.home.description,
+    images: [siteConfig.ogImage],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: 'Z0Vy5PZShij4eUj8t1bO-bKZunRs40r2OZ8Dm81wvy0',
+    other: {
+      'naver-site-verification': 'b94d68fdaf94addd31028cd63f7c6cc593792014',
+    },
+  },
+  alternates: {
+    canonical: siteConfig.url,
   },
 };
 
@@ -37,6 +97,15 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col">
+        <GoogleAnalytics />
+        <PageTracker />
+        <OrganizationJsonLd />
+        <WebsiteJsonLd />
+        <LocalBusinessJsonLd />
+        <ServiceJsonLd />
+        <WebPageJsonLd />
+        <ImageObjectJsonLd />
+        <ProfessionalServiceJsonLd />
         <LayoutWrapper>{children}</LayoutWrapper>
         <ScrollToTop />
       </body>

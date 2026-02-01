@@ -21,27 +21,63 @@ import {
 } from 'lucide-react';
 import { PublicCourse } from '@/lib/courses/actions';
 import { Category } from '@/types';
-import { EnrollmentWithProgress } from '@/types/learning';
-import { updateVideoProgress, markCourseCompleted } from '@/lib/enrollments/actions';
+import { EnrollmentWithProgress, VideoType, AdditionalVideoRequirement } from '@/types/learning';
+import { updateVideoProgress, updateAdditionalVideoProgress, markCourseCompleted, getCommonVideoUrls } from '@/lib/enrollments/actions';
 import CertificateGenerator from '@/components/certificate/CertificateGenerator';
 
 interface Props {
   course: PublicCourse;
   category?: Category;
   enrollment: EnrollmentWithProgress;
+  commonVideoUrls: { cbt: string; law: string };
 }
 
-export default function LearnPageContent({ course, category, enrollment: initialEnrollment }: Props) {
+// 비디오별 상태 타입
+interface VideoState {
+  currentTime: number;
+  duration: number;
+  maxWatched: number;
+  progress: number;
+}
+
+export default function LearnPageContent({ course, category, enrollment: initialEnrollment, commonVideoUrls }: Props) {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // 현재 활성 비디오 탭
+  const [activeVideoTab, setActiveVideoTab] = useState<VideoType>('main');
+
+  // 메인 비디오 상태
+  const [mainVideo, setMainVideo] = useState<VideoState>({
+    currentTime: initialEnrollment.lastWatchedPosition || 0,
+    duration: initialEnrollment.videoDurationSeconds || 0,
+    maxWatched: initialEnrollment.maxWatchedPosition || 0,
+    progress: initialEnrollment.progressPercentage || 0,
+  });
+
+  // CBT 비디오 상태
+  const [cbtVideo, setCbtVideo] = useState<VideoState>({
+    currentTime: initialEnrollment.cbtLastPosition || 0,
+    duration: initialEnrollment.cbtDuration || 0,
+    maxWatched: initialEnrollment.cbtMaxPosition || 0,
+    progress: initialEnrollment.cbtDuration > 0
+      ? Math.round((initialEnrollment.cbtMaxPosition / initialEnrollment.cbtDuration) * 100)
+      : 0,
+  });
+
+  // 준법의식 비디오 상태
+  const [lawVideo, setLawVideo] = useState<VideoState>({
+    currentTime: initialEnrollment.lawLastPosition || 0,
+    duration: initialEnrollment.lawDuration || 0,
+    maxWatched: initialEnrollment.lawMaxPosition || 0,
+    progress: initialEnrollment.lawDuration > 0
+      ? Math.round((initialEnrollment.lawMaxPosition / initialEnrollment.lawDuration) * 100)
+      : 0,
+  });
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [currentTime, setCurrentTime] = useState(initialEnrollment.lastWatchedPosition || 0);
-  const [duration, setDuration] = useState(initialEnrollment.videoDurationSeconds || 0);
-  const [maxWatched, setMaxWatched] = useState(initialEnrollment.maxWatchedPosition || 0);
-  const [progress, setProgress] = useState(initialEnrollment.progressPercentage || 0);
   const [isCompleting, setIsCompleting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(initialEnrollment.status === 'completed');
   const [certificateNumber, setCertificateNumber] = useState(initialEnrollment.certificateNumber || '');
@@ -49,14 +85,78 @@ export default function LearnPageContent({ course, category, enrollment: initial
   const [error, setError] = useState('');
   const [videoError, setVideoError] = useState('');
 
+  // 현재 활성 비디오 상태 가져오기
+  const getCurrentVideoState = () => {
+    switch (activeVideoTab) {
+      case 'cbt': return cbtVideo;
+      case 'law': return lawVideo;
+      default: return mainVideo;
+    }
+  };
+
+  // 현재 활성 비디오 상태 설정하기
+  const setCurrentVideoState = (updater: (prev: VideoState) => VideoState) => {
+    switch (activeVideoTab) {
+      case 'cbt': setCbtVideo(updater); break;
+      case 'law': setLawVideo(updater); break;
+      default: setMainVideo(updater); break;
+    }
+  };
+
+  // 현재 활성 비디오 URL 가져오기
+  const getCurrentVideoUrl = () => {
+    switch (activeVideoTab) {
+      case 'cbt': return commonVideoUrls.cbt;
+      case 'law': return commonVideoUrls.law;
+      default: return initialEnrollment.videoUrl;
+    }
+  };
+
+  // 추가 영상 요구사항
+  const videoRequirement = initialEnrollment.additionalVideoRequirement || 'none';
+
+  // 전체 진도율 계산 (영상 요구사항에 따라)
+  const getTotalProgress = () => {
+    if (videoRequirement === 'none') {
+      return mainVideo.progress;
+    }
+    if (videoRequirement === 'cbt-only') {
+      // 2개 영상 모두 98% 이상이면 100%로 표시
+      if (mainVideo.progress >= 98 && cbtVideo.progress >= 98) {
+        return 100;
+      }
+      return Math.round((mainVideo.progress + cbtVideo.progress) / 2);
+    }
+    // 'all' - 3개 영상 모두 98% 이상이면 100%로 표시
+    if (mainVideo.progress >= 98 && cbtVideo.progress >= 98 && lawVideo.progress >= 98) {
+      return 100;
+    }
+    return Math.round((mainVideo.progress + cbtVideo.progress + lawVideo.progress) / 3);
+  };
+
+  // 모든 영상 시청 완료 여부
+  const isAllVideosCompleted = () => {
+    if (videoRequirement === 'none') {
+      return mainVideo.progress >= 98;
+    }
+    if (videoRequirement === 'cbt-only') {
+      return mainVideo.progress >= 98 && cbtVideo.progress >= 98;
+    }
+    // 'all'
+    return mainVideo.progress >= 98 && cbtVideo.progress >= 98 && lawVideo.progress >= 98;
+  };
+
+  // 준법의식 영상 필요 여부
+  const needsLawVideo = videoRequirement === 'all';
+
   // 진도 저장 함수 (debounced)
-  const saveProgress = useCallback(async (currentPos: number, maxPos: number, dur: number) => {
+  const saveProgress = useCallback(async (currentPos: number, maxPos: number, dur: number, videoType: VideoType) => {
     if (progressSaveTimeoutRef.current) {
       clearTimeout(progressSaveTimeoutRef.current);
     }
 
     progressSaveTimeoutRef.current = setTimeout(async () => {
-      await updateVideoProgress(initialEnrollment.id, currentPos, maxPos, dur);
+      await updateAdditionalVideoProgress(initialEnrollment.id, videoType, currentPos, maxPos, dur);
     }, 5000); // 5초마다 저장
   }, [initialEnrollment.id]);
 
@@ -68,33 +168,39 @@ export default function LearnPageContent({ course, category, enrollment: initial
     const current = video.currentTime;
     const videoDuration = video.duration || 0;
 
-    setCurrentTime(current);
+    // 현재 활성 비디오 상태 업데이트
+    setCurrentVideoState((prev) => {
+      const newMaxWatched = Math.max(prev.maxWatched, current);
+      const newProgress = videoDuration > 0 ? Math.round((newMaxWatched / videoDuration) * 100) : 0;
 
-    // max_watched 업데이트 (새로 본 부분만)
-    // 현재 위치가 max_watched보다 클 때만 업데이트
-    const newMaxWatched = Math.max(maxWatched, current);
-    if (newMaxWatched > maxWatched) {
-      setMaxWatched(newMaxWatched);
-    }
+      // 진도 저장
+      saveProgress(current, newMaxWatched, videoDuration, activeVideoTab);
 
-    // 진도율 계산
-    const newProgress = videoDuration > 0 ? Math.round((newMaxWatched / videoDuration) * 100) : 0;
-    setProgress(newProgress);
-
-    // 진도 저장
-    saveProgress(current, newMaxWatched, videoDuration);
-  }, [maxWatched, saveProgress]);
+      return {
+        currentTime: current,
+        duration: videoDuration,
+        maxWatched: newMaxWatched,
+        progress: newProgress,
+      };
+    });
+  }, [activeVideoTab, saveProgress]);
 
   const handleLoadedMetadata = useCallback(() => {
     if (!videoRef.current) return;
     const videoDuration = videoRef.current.duration;
-    setDuration(videoDuration);
+
+    // 현재 활성 비디오 상태 업데이트
+    setCurrentVideoState((prev) => ({
+      ...prev,
+      duration: videoDuration,
+    }));
 
     // 마지막 시청 위치로 이동 (끝에서 5초 이전이면 그대로, 끝이면 처음부터)
-    if (initialEnrollment.lastWatchedPosition > 0 && initialEnrollment.lastWatchedPosition < videoDuration - 5) {
-      videoRef.current.currentTime = initialEnrollment.lastWatchedPosition;
+    const currentVideoState = getCurrentVideoState();
+    if (currentVideoState.currentTime > 0 && currentVideoState.currentTime < videoDuration - 5) {
+      videoRef.current.currentTime = currentVideoState.currentTime;
     }
-  }, [initialEnrollment.lastWatchedPosition]);
+  }, [activeVideoTab]);
 
   const handlePlay = () => {
     if (videoRef.current) {
@@ -137,30 +243,52 @@ export default function LearnPageContent({ course, category, enrollment: initial
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = parseFloat(e.target.value);
+    const currentVideoState = getCurrentVideoState();
     // 최대 시청 위치까지만 이동 가능
-    const seekTime = Math.min(time, maxWatched + 10); // 10초 여유
+    const seekTime = Math.min(time, currentVideoState.maxWatched + 10); // 10초 여유
     if (videoRef.current) {
       videoRef.current.currentTime = seekTime;
-      setCurrentTime(seekTime);
+      setCurrentVideoState((prev) => ({ ...prev, currentTime: seekTime }));
     }
   };
 
   const handleRestart = () => {
     if (videoRef.current) {
       videoRef.current.currentTime = 0;
-      setCurrentTime(0);
+      setCurrentVideoState((prev) => ({ ...prev, currentTime: 0 }));
       handlePlay();
     }
   };
 
   const handleVideoEnded = async () => {
     setIsPlaying(false);
+    const currentVideoState = getCurrentVideoState();
     // 영상 끝까지 시청했으므로 max_watched를 duration으로 설정
-    if (duration > 0) {
-      setMaxWatched(duration);
-      setProgress(100);
-      await updateVideoProgress(initialEnrollment.id, duration, duration, duration);
+    if (currentVideoState.duration > 0) {
+      setCurrentVideoState((prev) => ({
+        ...prev,
+        maxWatched: prev.duration,
+        progress: 100,
+      }));
+      await updateAdditionalVideoProgress(
+        initialEnrollment.id,
+        activeVideoTab,
+        currentVideoState.duration,
+        currentVideoState.duration,
+        currentVideoState.duration
+      );
     }
+  };
+
+  // 탭 변경 핸들러
+  const handleTabChange = (tab: VideoType) => {
+    // 현재 비디오 일시정지
+    if (videoRef.current) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+    setVideoError('');
+    setActiveVideoTab(tab);
   };
 
   const handleVideoError = () => {
@@ -169,13 +297,50 @@ export default function LearnPageContent({ course, category, enrollment: initial
 
   // 수료 처리
   const handleComplete = async () => {
-    if (progress < 98) {
-      setError(`진도율이 ${progress}%입니다. 100% 시청 후 수료할 수 있습니다.`);
+    if (!isAllVideosCompleted()) {
+      const missingVideos = [];
+      if (mainVideo.progress < 98) missingVideos.push('메인 영상');
+      if (videoRequirement === 'cbt-only' || videoRequirement === 'all') {
+        if (cbtVideo.progress < 98) missingVideos.push('인지행동개선훈련');
+      }
+      if (videoRequirement === 'all') {
+        if (lawVideo.progress < 98) missingVideos.push('준법의식교육');
+      }
+      setError(`아직 시청하지 않은 영상이 있습니다: ${missingVideos.join(', ')}`);
       return;
     }
 
     setIsCompleting(true);
     setError('');
+
+    // 수료 처리 전에 먼저 모든 영상의 진도율을 DB에 저장
+    await updateAdditionalVideoProgress(
+      initialEnrollment.id,
+      'main',
+      mainVideo.maxWatched,
+      mainVideo.maxWatched,
+      mainVideo.duration
+    );
+
+    if (videoRequirement === 'cbt-only' || videoRequirement === 'all') {
+      await updateAdditionalVideoProgress(
+        initialEnrollment.id,
+        'cbt',
+        cbtVideo.maxWatched,
+        cbtVideo.maxWatched,
+        cbtVideo.duration
+      );
+    }
+
+    if (videoRequirement === 'all') {
+      await updateAdditionalVideoProgress(
+        initialEnrollment.id,
+        'law',
+        lawVideo.maxWatched,
+        lawVideo.maxWatched,
+        lawVideo.duration
+      );
+    }
 
     const result = await markCourseCompleted(initialEnrollment.id);
 
@@ -193,12 +358,14 @@ export default function LearnPageContent({ course, category, enrollment: initial
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (videoRef.current) {
+        const currentVideoState = getCurrentVideoState();
         // 동기적으로 진도 저장 (best effort)
-        updateVideoProgress(
+        updateAdditionalVideoProgress(
           initialEnrollment.id,
+          activeVideoTab,
           videoRef.current.currentTime,
-          maxWatched,
-          videoRef.current.duration || duration
+          currentVideoState.maxWatched,
+          videoRef.current.duration || currentVideoState.duration
         );
       }
     };
@@ -210,7 +377,7 @@ export default function LearnPageContent({ course, category, enrollment: initial
         clearTimeout(progressSaveTimeoutRef.current);
       }
     };
-  }, [initialEnrollment.id, maxWatched, duration]);
+  }, [initialEnrollment.id, activeVideoTab, mainVideo, cbtVideo, lawVideo]);
 
   // 시간 포맷팅
   const formatTime = (seconds: number) => {
@@ -255,8 +422,8 @@ export default function LearnPageContent({ course, category, enrollment: initial
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <div className="text-sm text-gray-400">진도율</div>
-                <div className="text-lg font-bold text-white">{progress}%</div>
+                <div className="text-sm text-gray-400">전체 진도율</div>
+                <div className="text-lg font-bold text-white">{getTotalProgress()}%</div>
               </div>
             </div>
           </div>
@@ -268,12 +435,63 @@ export default function LearnPageContent({ course, category, enrollment: initial
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Video Player */}
           <div className="lg:col-span-2">
+            {/* Video Tabs (추가 영상이 필요한 코스만) */}
+            {videoRequirement !== 'none' && (
+              <div className="flex mb-4 bg-gray-800 rounded-xl p-1">
+                <button
+                  onClick={() => handleTabChange('main')}
+                  className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+                    activeVideoTab === 'main'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <span>메인 영상</span>
+                    {mainVideo.progress >= 98 && <CheckCircle className="w-4 h-4 text-green-400" />}
+                  </div>
+                  <div className="text-xs mt-1 opacity-75">{mainVideo.progress}%</div>
+                </button>
+                <button
+                  onClick={() => handleTabChange('cbt')}
+                  className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+                    activeVideoTab === 'cbt'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <span>인지행동개선훈련</span>
+                    {cbtVideo.progress >= 98 && <CheckCircle className="w-4 h-4 text-green-400" />}
+                  </div>
+                  <div className="text-xs mt-1 opacity-75">{cbtVideo.progress}%</div>
+                </button>
+                {needsLawVideo && (
+                  <button
+                    onClick={() => handleTabChange('law')}
+                    className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+                      activeVideoTab === 'law'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <span>준법의식교육</span>
+                      {lawVideo.progress >= 98 && <CheckCircle className="w-4 h-4 text-green-400" />}
+                    </div>
+                    <div className="text-xs mt-1 opacity-75">{lawVideo.progress}%</div>
+                  </button>
+                )}
+              </div>
+            )}
+
             <div className="bg-black rounded-2xl overflow-hidden shadow-2xl">
               {/* Video Container */}
               <div className="relative aspect-video bg-gray-800">
-                {initialEnrollment.videoUrl ? (
+                {getCurrentVideoUrl() ? (
                   <video
                     ref={videoRef}
+                    key={activeVideoTab} // 탭 변경 시 비디오 리로드
                     className="w-full h-full object-contain"
                     onTimeUpdate={handleTimeUpdate}
                     onLoadedMetadata={handleLoadedMetadata}
@@ -283,14 +501,18 @@ export default function LearnPageContent({ course, category, enrollment: initial
                     onError={handleVideoError}
                     playsInline
                   >
-                    <source src={initialEnrollment.videoUrl} type="video/mp4" />
+                    <source src={getCurrentVideoUrl() || ''} type="video/mp4" />
                     브라우저가 비디오 재생을 지원하지 않습니다.
                   </video>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
                     <AlertCircle className="w-16 h-16 text-gray-500 mb-4" />
                     <p className="text-gray-400 text-lg">비디오가 준비되지 않았습니다.</p>
-                    <p className="text-gray-500 text-sm mt-2">관리자가 영상을 업로드하면 시청할 수 있습니다.</p>
+                    <p className="text-gray-500 text-sm mt-2">
+                      {activeVideoTab === 'main'
+                        ? '관리자가 영상을 업로드하면 시청할 수 있습니다.'
+                        : '환경 설정에서 영상 URL을 설정해주세요.'}
+                    </p>
                   </div>
                 )}
 
@@ -302,7 +524,7 @@ export default function LearnPageContent({ course, category, enrollment: initial
                 )}
 
                 {/* Play Button Overlay */}
-                {!isPlaying && initialEnrollment.videoUrl && !videoError && (
+                {!isPlaying && getCurrentVideoUrl() && !videoError && (
                   <button
                     onClick={handlePlay}
                     className="absolute inset-0 flex items-center justify-center bg-black/30 group"
@@ -315,21 +537,26 @@ export default function LearnPageContent({ course, category, enrollment: initial
               </div>
 
               {/* Video Controls */}
-              {initialEnrollment.videoUrl && !videoError && (
+              {getCurrentVideoUrl() && !videoError && (
                 <div className="bg-gray-800 p-4">
                   {/* Progress Bar */}
                   <div className="relative mb-4">
                     {/* Watched Progress Background */}
-                    <div className="absolute top-0 left-0 h-2 bg-blue-900/50 rounded-full" style={{ width: `${(maxWatched / duration) * 100}%` }} />
+                    <div
+                      className="absolute top-0 left-0 h-2 bg-blue-900/50 rounded-full"
+                      style={{ width: `${getCurrentVideoState().duration > 0 ? (getCurrentVideoState().maxWatched / getCurrentVideoState().duration) * 100 : 0}%` }}
+                    />
                     <input
                       type="range"
                       min="0"
-                      max={duration || 100}
-                      value={currentTime}
+                      max={getCurrentVideoState().duration || 100}
+                      value={getCurrentVideoState().currentTime}
                       onChange={handleSeek}
                       className="w-full h-2 bg-gray-600 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
                       style={{
-                        background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${(currentTime / duration) * 100}%, #4B5563 ${(currentTime / duration) * 100}%, #4B5563 100%)`,
+                        background: getCurrentVideoState().duration > 0
+                          ? `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${(getCurrentVideoState().currentTime / getCurrentVideoState().duration) * 100}%, #4B5563 ${(getCurrentVideoState().currentTime / getCurrentVideoState().duration) * 100}%, #4B5563 100%)`
+                          : '#4B5563',
                       }}
                     />
                   </div>
@@ -356,7 +583,7 @@ export default function LearnPageContent({ course, category, enrollment: initial
                         {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
                       </button>
                       <span className="text-white text-sm font-mono">
-                        {formatTime(currentTime)} / {formatTime(duration)}
+                        {formatTime(getCurrentVideoState().currentTime)} / {formatTime(getCurrentVideoState().duration)}
                       </span>
                     </div>
                     <button
@@ -380,28 +607,86 @@ export default function LearnPageContent({ course, category, enrollment: initial
                 학습 진행률
               </h3>
 
-              {/* Progress Bar */}
+              {/* 전체 진도율 바 */}
               <div className="relative h-4 bg-gray-700 rounded-full overflow-hidden mb-3">
                 <div
                   className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-300"
-                  style={{ width: `${progress}%` }}
+                  style={{ width: `${getTotalProgress()}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-400">진행률</span>
-                <span className="text-white font-bold">{progress}%</span>
+              <div className="flex items-center justify-between text-sm mb-4">
+                <span className="text-gray-400">전체 진행률</span>
+                <span className="text-white font-bold">{getTotalProgress()}%</span>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-gray-700 space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">시청 시간</span>
-                  <span className="text-white">{formatTime(maxWatched)}</span>
+              {/* 개별 영상 진도 (추가 영상 필요한 코스) */}
+              {videoRequirement !== 'none' ? (
+                <div className="space-y-3 pt-4 border-t border-gray-700">
+                  {/* 메인 영상 */}
+                  <div>
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="text-gray-400 flex items-center gap-1">
+                        메인 영상
+                        {mainVideo.progress >= 98 && <CheckCircle className="w-3 h-3 text-green-400" />}
+                      </span>
+                      <span className="text-white">{mainVideo.progress}%</span>
+                    </div>
+                    <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 transition-all duration-300"
+                        style={{ width: `${mainVideo.progress}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* CBT 영상 */}
+                  <div>
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="text-gray-400 flex items-center gap-1">
+                        인지행동개선훈련
+                        {cbtVideo.progress >= 98 && <CheckCircle className="w-3 h-3 text-green-400" />}
+                      </span>
+                      <span className="text-white">{cbtVideo.progress}%</span>
+                    </div>
+                    <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-purple-500 transition-all duration-300"
+                        style={{ width: `${cbtVideo.progress}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* 준법의식 영상 (all인 경우만) */}
+                  {needsLawVideo && (
+                    <div>
+                      <div className="flex items-center justify-between text-sm mb-1">
+                        <span className="text-gray-400 flex items-center gap-1">
+                          준법의식교육
+                          {lawVideo.progress >= 98 && <CheckCircle className="w-3 h-3 text-green-400" />}
+                        </span>
+                        <span className="text-white">{lawVideo.progress}%</span>
+                      </div>
+                      <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-green-500 transition-all duration-300"
+                          style={{ width: `${lawVideo.progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">총 영상 길이</span>
-                  <span className="text-white">{formatTime(duration)}</span>
+              ) : (
+                <div className="mt-4 pt-4 border-t border-gray-700 space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">시청 시간</span>
+                    <span className="text-white">{formatTime(mainVideo.maxWatched)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">총 영상 길이</span>
+                    <span className="text-white">{formatTime(mainVideo.duration)}</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Completion Card */}
@@ -428,14 +713,16 @@ export default function LearnPageContent({ course, category, enrollment: initial
                 </div>
               ) : (
                 <div>
-                  {progress >= 98 ? (
+                  {isAllVideosCompleted() ? (
                     <div className="text-center py-4">
                       <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Award className="w-10 h-10 text-blue-400" />
                       </div>
                       <p className="text-blue-400 font-bold mb-2">수료 가능!</p>
                       <p className="text-gray-400 text-sm mb-4">
-                        영상을 100% 시청하셨습니다.
+                        {videoRequirement !== 'none'
+                          ? '모든 영상을 100% 시청하셨습니다.'
+                          : '영상을 100% 시청하셨습니다.'}
                       </p>
                       {error && (
                         <p className="text-red-400 text-sm mb-4">{error}</p>
@@ -463,9 +750,13 @@ export default function LearnPageContent({ course, category, enrollment: initial
                       <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                         <BookOpen className="w-10 h-10 text-gray-500" />
                       </div>
-                      <p className="text-gray-400 mb-2">영상을 100% 시청해주세요</p>
+                      <p className="text-gray-400 mb-2">
+                        {videoRequirement !== 'none'
+                          ? '모든 영상을 100% 시청해주세요'
+                          : '영상을 100% 시청해주세요'}
+                      </p>
                       <p className="text-gray-500 text-sm">
-                        현재 진도율: {progress}%
+                        현재 진도율: {getTotalProgress()}%
                       </p>
                     </div>
                   )}
