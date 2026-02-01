@@ -23,6 +23,9 @@ function LoginContent() {
     if (searchParams.get('registered') === 'true') {
       setSuccessMessage('회원가입이 완료되었습니다. 로그인해주세요.');
     }
+    if (searchParams.get('message') === 'login_required') {
+      setError('수강신청을 하시려면 로그인이 필요합니다.');
+    }
     const oauthError = searchParams.get('error');
     if (oauthError) {
       const errorMessages: Record<string, string> = {
@@ -49,8 +52,8 @@ function LoginContent() {
     if (result.success) {
       // redirect 파라미터가 있으면 해당 페이지로 이동
       const redirectTo = searchParams.get('redirect');
-      router.push(redirectTo || '/');
-      router.refresh();
+      // 쿠키가 제대로 적용되도록 전체 페이지 새로고침
+      window.location.href = redirectTo || '/';
     } else {
       setError(translateAuthError(result.error || ''));
     }
