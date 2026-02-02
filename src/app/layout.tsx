@@ -6,6 +6,7 @@ import { siteConfig, pageMetadata } from '@/lib/seo/config';
 import { OrganizationJsonLd, WebsiteJsonLd, LocalBusinessJsonLd, ServiceJsonLd, WebPageJsonLd, ImageObjectJsonLd, ProfessionalServiceJsonLd } from '@/components/seo/JsonLd';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import PageTracker from '@/components/analytics/PageTracker';
+import Boraware from '@/components/analytics/Boraware';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -99,6 +100,7 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col">
         <GoogleAnalytics />
         <PageTracker />
+        <Boraware />
         <OrganizationJsonLd />
         <WebsiteJsonLd />
         <LocalBusinessJsonLd />

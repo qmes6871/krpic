@@ -284,6 +284,33 @@ export async function getEnrollment(id: string): Promise<(Enrollment & { user: P
 
 export async function updateEnrollment(id: string, updates: Partial<Enrollment>): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
+
+  // 상태가 completed로 변경되는 경우, certificate_number가 없으면 자동 생성
+  if (updates.status === 'completed') {
+    // 현재 enrollment 정보 조회
+    const { data: currentEnrollment } = await supabase
+      .from('enrollments')
+      .select(`
+        certificate_number,
+        course:courses(category)
+      `)
+      .eq('id', id)
+      .single();
+
+    // certificate_number가 없으면 자동 생성
+    if (currentEnrollment && !currentEnrollment.certificate_number) {
+      const course = currentEnrollment.course as unknown as { category: string } | null;
+      const category = course?.category || 'EDU';
+      const certificateNumber = await generateAdminCertificateNumber(category);
+
+      updates = {
+        ...updates,
+        completed_at: new Date().toISOString(),
+        certificate_number: certificateNumber,
+      } as Partial<Enrollment>;
+    }
+  }
+
   const { error } = await supabase
     .from('enrollments')
     .update(updates)
@@ -291,6 +318,35 @@ export async function updateEnrollment(id: string, updates: Partial<Enrollment>)
 
   if (error) return { success: false, error: error.message };
   return { success: true };
+}
+
+// 관리자용 수료증 번호 생성
+async function generateAdminCertificateNumber(category: string): Promise<string> {
+  const supabase = await createClient();
+  const year = new Date().getFullYear();
+
+  const categoryCodeMap: Record<string, string> = {
+    'drunk-driving': 'DUI',
+    'drug': 'DRG',
+    'violence': 'VIO',
+    'theft': 'THF',
+    'fraud': 'FRD',
+    'sexual-offense': 'SEX',
+    'juvenile': 'JUV',
+    'detention': 'DET',
+  };
+
+  const categoryCode = categoryCodeMap[category] || 'EDU';
+
+  const { count } = await supabase
+    .from('enrollments')
+    .select('*', { count: 'exact', head: true })
+    .like('certificate_number', `KRPIC-${year}-${categoryCode}-%`);
+
+  const nextNumber = (count || 0) + 1;
+  const paddedNumber = String(nextNumber).padStart(5, '0');
+
+  return `KRPIC-${year}-${categoryCode}-${paddedNumber}`;
 }
 
 export async function deleteEnrollment(id: string): Promise<{ success: boolean; error?: string }> {

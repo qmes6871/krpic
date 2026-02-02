@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { X, Download, Loader2, FileText, Clock } from 'lucide-react';
 import { getUploadedCertificatesForUser, getCertificateData, generatePersonalizedCertificate } from '@/lib/enrollments/actions';
-import { allCertificates, CertificateTemplate } from '@/data/certificateTemplates';
+import { allCertificates, CertificateTemplate, getCertificatesForCourse } from '@/data/certificateTemplates';
 
 interface UploadedCertificate {
   url: string;
@@ -40,12 +40,18 @@ export default function CertificateGenerator({ enrollmentId, onClose }: Props) {
   const [uploadedCerts, setUploadedCerts] = useState<UploadedCertificates>({});
   const [userName, setUserName] = useState('');
   const [courseCertificateIds, setCourseCertificateIds] = useState<string[]>([]);
+  const [courseCategory, setCourseCategory] = useState<string>('');
   const [generatingCertId, setGeneratingCertId] = useState<string | null>(null);
 
-  // 코스에 설정된 증명서만 필터링 (가이드 문서 제외)
-  const certificates = allCertificates.filter(cert =>
-    !cert.isGuide && courseCertificateIds.includes(cert.id)
-  );
+  // 코스에 설정된 증명서 또는 카테고리 기본 증명서 사용 (가이드 문서 제외)
+  // 데이터 로드 완료 후에만 계산 (courseCategory가 설정되어야 함)
+  const certificates = useMemo(() => {
+    if (isLoading || !courseCategory) return [];
+    return getCertificatesForCourse(
+      courseCertificateIds.length > 0 ? courseCertificateIds : null,
+      courseCategory
+    ).filter(cert => !cert.isGuide);
+  }, [isLoading, courseCertificateIds, courseCategory]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -65,6 +71,7 @@ export default function CertificateGenerator({ enrollmentId, onClose }: Props) {
         if (dataResult.success && dataResult.data) {
           setUserName(dataResult.data.userName);
           setCourseCertificateIds(dataResult.data.courseCertificates || []);
+          setCourseCategory(dataResult.data.category || '');
         }
       } catch (err) {
         setError('데이터를 불러오는 중 오류가 발생했습니다.');
