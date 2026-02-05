@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, Phone, X } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, Phone, X, CheckCircle2, XCircle } from 'lucide-react';
 import { signUp } from '@/lib/auth/actions';
 import { translateAuthError } from '@/lib/auth/errors';
 
@@ -163,8 +163,10 @@ function TermsModal({
   );
 }
 
-export default function RegisterPage() {
+function RegisterContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -225,8 +227,8 @@ export default function RegisterPage() {
     );
 
     if (result.success) {
-      // 회원가입 성공 후 바로 로그인 페이지로 이동
-      router.push('/login?registered=true');
+      // 회원가입 성공 후 자동 로그인 완료, redirect 또는 홈으로 이동 (쿠키 설정 위해 full refresh)
+      window.location.href = redirectTo || '/';
     } else {
       setError(translateAuthError(result.error || ''));
     }
@@ -235,12 +237,15 @@ export default function RegisterPage() {
   };
 
   const handleNaverRegister = () => {
-    window.location.href = '/api/auth/naver';
+    window.location.href = redirectTo ? `/api/auth/naver?redirect=${encodeURIComponent(redirectTo)}` : '/api/auth/naver';
   };
 
   const handleKakaoRegister = () => {
-    window.location.href = '/api/auth/kakao';
+    window.location.href = redirectTo ? `/api/auth/kakao?redirect=${encodeURIComponent(redirectTo)}` : '/api/auth/kakao';
   };
+
+  // 로그인 링크에 redirect 파라미터 전달
+  const loginUrl = redirectTo ? `/login?redirect=${encodeURIComponent(redirectTo)}` : '/login';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 flex items-center justify-center px-4 py-24 md:py-32 relative overflow-hidden">
@@ -453,6 +458,30 @@ export default function RegisterPage() {
                   {showPasswordConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+
+              {/* 실시간 비밀번호 검증 */}
+              {(formData.password || formData.passwordConfirm) && (
+                <div className="mt-3 space-y-2">
+                  <div className={`flex items-center gap-2 text-sm ${formData.password.length >= 8 ? 'text-green-600' : 'text-red-500'}`}>
+                    {formData.password.length >= 8 ? (
+                      <CheckCircle2 className="w-4 h-4" />
+                    ) : (
+                      <XCircle className="w-4 h-4" />
+                    )}
+                    <span>비밀번호 8자 이상 {formData.password.length >= 8 ? '✓' : `(현재 ${formData.password.length}자)`}</span>
+                  </div>
+                  {formData.passwordConfirm && (
+                    <div className={`flex items-center gap-2 text-sm ${formData.password === formData.passwordConfirm ? 'text-green-600' : 'text-red-500'}`}>
+                      {formData.password === formData.passwordConfirm ? (
+                        <CheckCircle2 className="w-4 h-4" />
+                      ) : (
+                        <XCircle className="w-4 h-4" />
+                      )}
+                      <span>비밀번호 일치 {formData.password === formData.passwordConfirm ? '✓' : '✗'}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Terms */}
@@ -539,7 +568,7 @@ export default function RegisterPage() {
           <div className="text-center mt-6">
             <p className="text-primary-600 text-sm">
               이미 계정이 있으신가요?{' '}
-              <Link href="/login" className="text-accent-600 hover:text-accent-700 font-semibold">
+              <Link href={loginUrl} className="text-accent-600 hover:text-accent-700 font-semibold">
                 로그인
               </Link>
             </p>
@@ -567,5 +596,17 @@ export default function RegisterPage() {
         type={modalType || 'terms'}
       />
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 flex items-center justify-center">
+        <div className="text-white text-lg">로딩 중...</div>
+      </div>
+    }>
+      <RegisterContent />
+    </Suspense>
   );
 }

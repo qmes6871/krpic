@@ -62,12 +62,19 @@ function LoginContent() {
   };
 
   const handleNaverLogin = () => {
-    window.location.href = '/api/auth/naver';
+    const redirectTo = searchParams.get('redirect');
+    window.location.href = redirectTo ? `/api/auth/naver?redirect=${encodeURIComponent(redirectTo)}` : '/api/auth/naver';
   };
 
   const handleKakaoLogin = () => {
-    window.location.href = '/api/auth/kakao';
+    const redirectTo = searchParams.get('redirect');
+    window.location.href = redirectTo ? `/api/auth/kakao?redirect=${encodeURIComponent(redirectTo)}` : '/api/auth/kakao';
   };
+
+  // 회원가입 링크에 redirect 파라미터 전달
+  const registerUrl = searchParams.get('redirect')
+    ? `/register?redirect=${encodeURIComponent(searchParams.get('redirect')!)}`
+    : '/register';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 flex items-center justify-center px-4 py-24 md:py-32 relative overflow-hidden">
@@ -243,7 +250,7 @@ function LoginContent() {
           <div className="text-center">
             <p className="text-primary-600 text-sm">
               아직 회원이 아니신가요?{' '}
-              <Link href="/register" className="text-accent-600 hover:text-accent-700 font-semibold">
+              <Link href={registerUrl} className="text-accent-600 hover:text-accent-700 font-semibold">
                 회원가입
               </Link>
             </p>

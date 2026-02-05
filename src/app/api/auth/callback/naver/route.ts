@@ -39,6 +39,19 @@ export async function GET(request: NextRequest) {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://krpic.co.kr';
 
+  // state에서 redirect URL 추출
+  let redirectTo = '/my-courses';
+  if (state) {
+    try {
+      const stateData = JSON.parse(Buffer.from(state, 'base64').toString());
+      if (stateData.redirect) {
+        redirectTo = stateData.redirect;
+      }
+    } catch {
+      // state 파싱 실패시 기본값 사용
+    }
+  }
+
   if (error) {
     console.error('Naver OAuth error:', error);
     return NextResponse.redirect(`${siteUrl}/login?error=naver_auth_failed`);
@@ -166,8 +179,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${siteUrl}/login?error=session_failed`);
     }
 
-    // Redirect to my-courses page
-    return NextResponse.redirect(`${siteUrl}/my-courses`);
+    // Redirect to original page or my-courses
+    return NextResponse.redirect(`${siteUrl}${redirectTo}`);
   } catch (err) {
     console.error('Naver OAuth callback error:', err);
     return NextResponse.redirect(`${siteUrl}/login?error=unknown`);

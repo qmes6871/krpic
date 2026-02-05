@@ -31,6 +31,16 @@ export async function signUp(
     return { success: false, error: error.message };
   }
 
+  // 회원가입 성공 후 자동 로그인
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (signInError) {
+    return { success: true, error: signInError.message };
+  }
+
   return { success: true };
 }
 
