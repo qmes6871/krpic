@@ -34,6 +34,7 @@ export interface Notice {
   important: boolean;
   category: 'notice' | 'update' | 'event' | 'guide';
   views: number;
+  showPopup?: boolean;
 }
 
 export interface Review {

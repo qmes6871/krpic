@@ -16,7 +16,8 @@ import {
   Pin,
   Eye,
   Calendar,
-  FileText
+  FileText,
+  MessageSquare
 } from 'lucide-react';
 import {
   getNotices,
@@ -54,6 +55,7 @@ export default function AdminNoticesPage() {
   const [formContent, setFormContent] = useState('');
   const [formCategory, setFormCategory] = useState<'notice' | 'update' | 'event' | 'guide'>('notice');
   const [formImportant, setFormImportant] = useState(false);
+  const [formShowPopup, setFormShowPopup] = useState(false);
   const [formViews, setFormViews] = useState(0);
   const [formDate, setFormDate] = useState('');
 
@@ -97,6 +99,7 @@ export default function AdminNoticesPage() {
     setFormContent('');
     setFormCategory('notice');
     setFormImportant(false);
+    setFormShowPopup(false);
     setFormViews(0);
     setFormDate(new Date().toISOString().split('T')[0]);
   };
@@ -112,6 +115,7 @@ export default function AdminNoticesPage() {
     setFormContent(notice.content);
     setFormCategory(notice.category as 'notice' | 'update' | 'event' | 'guide');
     setFormImportant(notice.important);
+    setFormShowPopup(notice.showPopup || false);
     setFormViews(notice.views);
     setFormDate(notice.date);
     setShowEditModal(true);
@@ -134,6 +138,7 @@ export default function AdminNoticesPage() {
       content: formContent,
       category: formCategory,
       important: formImportant,
+      showPopup: formShowPopup,
       views: formViews,
       createdAt: formDate ? `${formDate}T00:00:00.000Z` : undefined,
     };
@@ -162,6 +167,7 @@ export default function AdminNoticesPage() {
       content: formContent,
       category: formCategory,
       important: formImportant,
+      showPopup: formShowPopup,
       views: formViews,
       createdAt: formDate ? `${formDate}T00:00:00.000Z` : undefined,
     };
@@ -298,6 +304,7 @@ export default function AdminNoticesPage() {
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">제목</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">카테고리</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">팝업</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">작성일</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">조회수</th>
                 <th className="px-6 py-4 text-right text-sm font-semibold text-gray-600">관리</th>
@@ -328,6 +335,16 @@ export default function AdminNoticesPage() {
                           <CategoryIcon className="w-3 h-3" />
                           {categoryConfig.label}
                         </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {notice.showPopup ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                            <MessageSquare className="w-3 h-3" />
+                            표시중
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-sm">-</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-gray-600 text-sm">
                         <div className="flex items-center gap-1">
@@ -364,7 +381,7 @@ export default function AdminNoticesPage() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     {searchQuery || filterCategory !== 'all'
                       ? '검색 결과가 없습니다'
                       : '등록된 공지사항이 없습니다'}
@@ -421,22 +438,24 @@ export default function AdminNoticesPage() {
                   />
                 </div>
 
-                {/* Category & Important */}
+                {/* Category */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
+                  <select
+                    value={formCategory}
+                    onChange={(e) => setFormCategory(e.target.value as 'notice' | 'update' | 'event' | 'guide')}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    {categoryOptions.map((cat) => (
+                      <option key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Important & Popup */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
-                    <select
-                      value={formCategory}
-                      onChange={(e) => setFormCategory(e.target.value as 'notice' | 'update' | 'event' | 'guide')}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    >
-                      {categoryOptions.map((cat) => (
-                        <option key={cat.value} value={cat.value}>
-                          {cat.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">중요 공지</label>
                     <button
@@ -449,7 +468,22 @@ export default function AdminNoticesPage() {
                       }`}
                     >
                       <Pin className="w-4 h-4" />
-                      {formImportant ? '중요 공지로 설정됨' : '중요 공지로 설정'}
+                      {formImportant ? '설정됨' : '설정'}
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">팝업 표시</label>
+                    <button
+                      type="button"
+                      onClick={() => setFormShowPopup(!formShowPopup)}
+                      className={`w-full px-4 py-3 border rounded-xl flex items-center justify-center gap-2 transition-colors ${
+                        formShowPopup
+                          ? 'bg-green-100 border-green-300 text-green-700'
+                          : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      {formShowPopup ? '표시중' : '표시'}
                     </button>
                   </div>
                 </div>
@@ -557,22 +591,24 @@ export default function AdminNoticesPage() {
                   />
                 </div>
 
-                {/* Category & Important */}
+                {/* Category */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
+                  <select
+                    value={formCategory}
+                    onChange={(e) => setFormCategory(e.target.value as 'notice' | 'update' | 'event' | 'guide')}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    {categoryOptions.map((cat) => (
+                      <option key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Important & Popup */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
-                    <select
-                      value={formCategory}
-                      onChange={(e) => setFormCategory(e.target.value as 'notice' | 'update' | 'event' | 'guide')}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    >
-                      {categoryOptions.map((cat) => (
-                        <option key={cat.value} value={cat.value}>
-                          {cat.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">중요 공지</label>
                     <button
@@ -585,7 +621,22 @@ export default function AdminNoticesPage() {
                       }`}
                     >
                       <Pin className="w-4 h-4" />
-                      {formImportant ? '중요 공지로 설정됨' : '중요 공지로 설정'}
+                      {formImportant ? '설정됨' : '설정'}
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">팝업 표시</label>
+                    <button
+                      type="button"
+                      onClick={() => setFormShowPopup(!formShowPopup)}
+                      className={`w-full px-4 py-3 border rounded-xl flex items-center justify-center gap-2 transition-colors ${
+                        formShowPopup
+                          ? 'bg-green-100 border-green-300 text-green-700'
+                          : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      {formShowPopup ? '표시중' : '표시'}
                     </button>
                   </div>
                 </div>

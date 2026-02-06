@@ -7,6 +7,7 @@ import { OrganizationJsonLd, WebsiteJsonLd, LocalBusinessJsonLd, ServiceJsonLd, 
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import PageTracker from '@/components/analytics/PageTracker';
 import Boraware from '@/components/analytics/Boraware';
+import NoticePopupWrapper from '@/components/common/NoticePopupWrapper';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -110,6 +111,7 @@ export default function RootLayout({
         <ProfessionalServiceJsonLd />
         <LayoutWrapper>{children}</LayoutWrapper>
         <ScrollToTop />
+        <NoticePopupWrapper />
       </body>
     </html>
   );

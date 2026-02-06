@@ -10,6 +10,7 @@ export interface NoticeInput {
   important: boolean;
   views?: number;
   createdAt?: string;
+  showPopup?: boolean;
 }
 
 // 공지사항 목록 조회
@@ -34,6 +35,7 @@ export async function getNotices(): Promise<Notice[]> {
     important: notice.important,
     category: notice.category,
     views: notice.views || 0,
+    showPopup: notice.show_popup || false,
   }));
 }
 
@@ -60,6 +62,7 @@ export async function getNoticeById(id: string): Promise<Notice | null> {
     important: data.important,
     category: data.category,
     views: data.views || 0,
+    showPopup: data.show_popup || false,
   };
 }
 
@@ -83,6 +86,7 @@ export async function createNotice(input: NoticeInput): Promise<{
     content: input.content,
     category: input.category,
     important: input.important,
+    show_popup: input.showPopup || false,
   };
 
   if (input.views !== undefined) {
@@ -118,6 +122,7 @@ export async function updateNotice(
     content: input.content,
     category: input.category,
     important: input.important,
+    show_popup: input.showPopup || false,
     updated_at: new Date().toISOString(),
   };
 

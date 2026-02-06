@@ -83,13 +83,13 @@ export default async function NoticeDetailPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-primary-50">
       {/* Hero Header */}
-      <section className="relative bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 pt-12 pb-24">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-10 left-20 w-64 h-64 bg-secondary-500/10 rounded-full blur-3xl" />
+      <section className="relative bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 pt-24 pb-24">
+        <div className="absolute inset-0 overflow-hidden pt-20">
+          <div className="absolute top-32 left-20 w-64 h-64 bg-secondary-500/10 rounded-full blur-3xl" />
           <div className="absolute bottom-10 right-20 w-80 h-80 bg-accent-500/10 rounded-full blur-3xl" />
         </div>
 
-        <div className="container-custom relative">
+        <div className="container-custom relative pt-8">
           {/* Back Link */}
           <Link
             href="/notice"
