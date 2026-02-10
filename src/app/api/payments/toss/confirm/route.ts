@@ -87,13 +87,16 @@ export async function POST(request: NextRequest) {
 
     console.log('Is virtual account:', isVirtualAccount, 'Status:', enrollmentStatus);
 
-    // 수강 등록 생성 (기본 컬럼만 사용)
+    // 수강 등록 생성
+    const paymentStatus = isVirtualAccount ? 'unpaid' : 'paid';
     const { data: enrollment, error: enrollmentError } = await supabaseAdmin
       .from('enrollments')
       .insert({
         user_id: userId,
         course_id: courseId,
         status: enrollmentStatus,
+        payment_status: paymentStatus,
+        payment_amount: amount,
       })
       .select()
       .single();

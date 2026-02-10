@@ -700,7 +700,7 @@ export async function generatePersonalizedCertificate(
     const fontBytes = await readFile(fontPath);
     const koreanFont = await pdfDoc.embedFont(fontBytes);
 
-    // 첫 번째 페이지 가져오기
+    // 페이지 가져오기
     const pages = pdfDoc.getPages();
     const firstPage = pages[0];
     const { height } = firstPage.getSize();
@@ -708,7 +708,7 @@ export async function generatePersonalizedCertificate(
     // 수료일 포맷
     const formattedDate = `${completionDate.getFullYear()}년 ${completionDate.getMonth() + 1}월 ${completionDate.getDate()}일`;
 
-    // 이름 추가 (좌하단 기준 좌표를 좌상단 기준으로 변환)
+    // 이름 추가 (항상 첫 페이지에)
     firstPage.drawText(userName, {
       x: template.namePosition.x,
       y: height - template.namePosition.y,
@@ -717,10 +717,14 @@ export async function generatePersonalizedCertificate(
       color: rgb(0, 0, 0),
     });
 
-    // 날짜 추가
-    firstPage.drawText(formattedDate, {
+    // 날짜 추가 (datePage가 지정되어 있으면 해당 페이지에, 아니면 첫 페이지에)
+    const datePageIndex = template.datePage ?? 0;
+    const datePage = pages[datePageIndex] || firstPage;
+    const { height: datePageHeight } = datePage.getSize();
+
+    datePage.drawText(formattedDate, {
       x: template.datePosition.x,
-      y: height - template.datePosition.y,
+      y: datePageHeight - template.datePosition.y,
       size: template.datePosition.fontSize,
       font: koreanFont,
       color: rgb(0, 0, 0),
@@ -783,4 +787,48 @@ export async function getUploadedCertificatesForUser(enrollmentId: string): Prom
   }
 
   return { success: true, data: enrollment.uploaded_certificates || {} };
+}
+
+// 사용자용: 발급된 증명서 목록 조회
+export interface IssuedCertificate {
+  issuedAt: string;
+  issuedBy?: string;
+}
+
+export type IssuedCertificates = Record<string, IssuedCertificate>;
+
+export async function getIssuedCertificatesForUser(enrollmentId: string): Promise<{
+  success: boolean;
+  data?: IssuedCertificates;
+  error?: string;
+}> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: '로그인이 필요합니다.' };
+  }
+
+  // enrollment 조회
+  const { data: enrollment, error } = await supabase
+    .from('enrollments')
+    .select('issued_certificates, user_id, status')
+    .eq('id', enrollmentId)
+    .single();
+
+  if (error || !enrollment) {
+    return { success: false, error: '수강 정보를 찾을 수 없습니다.' };
+  }
+
+  // 권한 확인
+  if (enrollment.user_id !== user.id) {
+    return { success: false, error: '권한이 없습니다.' };
+  }
+
+  // 수료 여부 확인
+  if (enrollment.status !== 'completed') {
+    return { success: false, error: '수료 완료 후 증명서를 확인할 수 있습니다.' };
+  }
+
+  return { success: true, data: enrollment.issued_certificates || {} };
 }

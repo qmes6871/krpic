@@ -89,9 +89,9 @@ export default function ReviewsPage() {
                   <MessageSquare className="w-4 h-4" />
                   실제 수강생들의 생생한 후기
                 </span>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+                <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4" aria-hidden="true">
                   수강생 <span className="text-accent-400">후기</span>
-                </h1>
+                </div>
                 <p className="text-lg md:text-xl text-white/80 md:max-w-2xl md:mx-auto">
                   KRPIC 재범방지교육을 수강한 분들의 진솔한 이야기를 확인해 보세요
                 </p>
@@ -148,45 +148,45 @@ export default function ReviewsPage() {
       {/* Stats Section - Floating Cards */}
       <section className="relative -mt-20 z-10 px-4">
         <div className="container-custom">
-          <div className="grid grid-cols-3 gap-4 max-w-3xl mx-auto">
+          <div className="grid grid-cols-3 gap-2 md:gap-4 max-w-3xl mx-auto">
             {/* Total Reviews */}
             <FadeIn delay={0}>
-              <div className="bg-white rounded-2xl p-6 shadow-lg shadow-primary-900/5 border border-primary-100">
-                <div className="flex items-center gap-2 text-secondary-500 mb-2">
-                  <MessageSquare className="w-5 h-5" />
-                  <span className="text-sm font-medium">전체 후기</span>
+              <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg shadow-primary-900/5 border border-primary-100">
+                <div className="flex items-center gap-1 md:gap-2 text-secondary-500 mb-1 md:mb-2">
+                  <MessageSquare className="w-4 h-4 md:w-5 md:h-5" />
+                  <span className="text-xs md:text-sm font-medium">전체 후기</span>
                 </div>
-                <div className="text-3xl md:text-4xl font-bold text-primary-900">
+                <div className="text-xl md:text-4xl font-bold text-primary-900 whitespace-nowrap">
                   {stats.total}
-                  <span className="text-lg text-primary-400">개</span>
+                  <span className="text-sm md:text-lg text-primary-400">개</span>
                 </div>
               </div>
             </FadeIn>
 
             {/* Recommend Rate */}
             <FadeIn delay={100}>
-              <div className="bg-white rounded-2xl p-6 shadow-lg shadow-primary-900/5 border border-primary-100">
-                <div className="flex items-center gap-2 text-green-500 mb-2">
-                  <ThumbsUp className="w-5 h-5" />
-                  <span className="text-sm font-medium">추천률</span>
+              <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg shadow-primary-900/5 border border-primary-100">
+                <div className="flex items-center gap-1 md:gap-2 text-green-500 mb-1 md:mb-2">
+                  <ThumbsUp className="w-4 h-4 md:w-5 md:h-5" />
+                  <span className="text-xs md:text-sm font-medium">추천률</span>
                 </div>
-                <div className="text-3xl md:text-4xl font-bold text-primary-900">
+                <div className="text-xl md:text-4xl font-bold text-primary-900 whitespace-nowrap">
                   {stats.recommendRate}
-                  <span className="text-lg text-primary-400">%</span>
+                  <span className="text-sm md:text-lg text-primary-400">%</span>
                 </div>
               </div>
             </FadeIn>
 
             {/* Verified Reviews */}
             <FadeIn delay={200}>
-              <div className="bg-white rounded-2xl p-6 shadow-lg shadow-primary-900/5 border border-primary-100">
-                <div className="flex items-center gap-2 text-blue-500 mb-2">
-                  <BadgeCheck className="w-5 h-5" />
-                  <span className="text-sm font-medium">인증 후기</span>
+              <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg shadow-primary-900/5 border border-primary-100">
+                <div className="flex items-center gap-1 md:gap-2 text-blue-500 mb-1 md:mb-2">
+                  <BadgeCheck className="w-4 h-4 md:w-5 md:h-5" />
+                  <span className="text-xs md:text-sm font-medium">인증 후기</span>
                 </div>
-                <div className="text-3xl md:text-4xl font-bold text-primary-900">
+                <div className="text-xl md:text-4xl font-bold text-primary-900 whitespace-nowrap">
                   100
-                  <span className="text-lg text-primary-400">%</span>
+                  <span className="text-sm md:text-lg text-primary-400">%</span>
                 </div>
               </div>
             </FadeIn>

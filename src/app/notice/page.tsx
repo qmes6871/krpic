@@ -111,9 +111,9 @@ export default function NoticePage() {
                   <Megaphone className="w-4 h-4" />
                   KRPIC 소식을 전해드립니다
                 </span>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+                <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4" aria-hidden="true">
                   공지<span className="text-accent-400">사항</span>
-                </h1>
+                </div>
                 <p className="text-lg md:text-xl text-white/80">
                   센터의 새로운 소식과 업데이트를 확인하세요
                 </p>
