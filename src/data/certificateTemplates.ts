@@ -113,8 +113,8 @@ export const commonCertificates: CertificateTemplate[] = [
     name: '심리상담사 서명 탄원서',
     description: '심리상담사가 서명한 탄원서',
     fileName: '심리상담사 서명 탄원서.pdf',
-    namePosition: { x: 170, y: 262, fontSize: 14 },
-    datePosition: { x: 155, y: 672, fontSize: 12 },
+    namePosition: { x: 140, y: 137, fontSize: 12 },
+    datePosition: { x: 125, y: 747, fontSize: 11 },
   },
   {
     id: 'counseling-reflection',
