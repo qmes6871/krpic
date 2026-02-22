@@ -536,10 +536,14 @@ export async function generateAdminCertificate(
       color: rgb(0, 0, 0),
     });
 
-    // 날짜 추가
-    firstPage.drawText(formattedDate, {
+    // 날짜 추가 (datePage가 지정되어 있으면 해당 페이지에, 아니면 첫 페이지에)
+    const datePageIndex = template.datePage ?? 0;
+    const datePage = pages[datePageIndex] || firstPage;
+    const { height: datePageHeight } = datePage.getSize();
+
+    datePage.drawText(formattedDate, {
       x: template.datePosition.x,
-      y: height - template.datePosition.y,
+      y: datePageHeight - template.datePosition.y,
       size: template.datePosition.fontSize,
       font: koreanFont,
       color: rgb(0, 0, 0),
