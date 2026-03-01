@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+// 환경 변수 로딩 타이밍 문제 방지를 위해 함수 내에서 클라이언트 생성
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Supabase environment variables are missing');
+  }
+
+  return createClient(supabaseUrl, supabaseServiceKey);
+}
 
 // User-Agent 파싱
 function parseUserAgent(ua: string) {
@@ -46,6 +53,9 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get('user-agent') || '';
 
     const { browser, os, deviceType } = parseUserAgent(userAgent);
+
+    // Supabase 클라이언트 생성
+    const supabase = getSupabaseClient();
 
     // Insert page view
     const { error } = await supabase.from('page_views').insert({

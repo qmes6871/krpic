@@ -43,15 +43,33 @@ export interface DailyStats {
   unique_visitors: number;
 }
 
+// 한국 시간대(KST, UTC+9) 기준으로 날짜 시작 시간 계산
+function getKSTDateStart(daysAgo: number = 0): string {
+  const now = new Date();
+  // 현재 UTC 시간에서 KST로 변환하여 날짜 계산
+  const kstOffset = 9 * 60 * 60 * 1000; // 9시간 (밀리초)
+  const kstNow = new Date(now.getTime() + kstOffset);
+
+  // KST 기준 해당 날짜의 00:00:00
+  const kstMidnight = new Date(Date.UTC(
+    kstNow.getUTCFullYear(),
+    kstNow.getUTCMonth(),
+    kstNow.getUTCDate() - daysAgo
+  ));
+
+  // UTC로 변환 (KST 00:00 = UTC 전날 15:00)
+  const utcTime = new Date(kstMidnight.getTime() - kstOffset);
+  return utcTime.toISOString();
+}
+
 // 기본 통계 조회
 export async function getAnalyticsStats(): Promise<AnalyticsStats | null> {
   const supabase = await createClient();
 
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-  const yesterdayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).toISOString();
-  const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).toISOString();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30).toISOString();
+  const todayStart = getKSTDateStart(0);
+  const yesterdayStart = getKSTDateStart(1);
+  const weekStart = getKSTDateStart(7);
+  const monthStart = getKSTDateStart(30);
 
   const [
     { count: todayViews },
@@ -196,12 +214,11 @@ export async function getBrowserStats(days: number = 7): Promise<BrowserStats[]>
     .sort((a, b) => b.count - a.count);
 }
 
-// 시간대별 통계 (오늘)
+// 시간대별 통계 (오늘 - 한국 시간 기준)
 export async function getHourlyStats(): Promise<HourlyStats[]> {
   const supabase = await createClient();
 
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+  const todayStart = getKSTDateStart(0);
 
   const { data } = await supabase
     .from('page_views')
@@ -215,8 +232,12 @@ export async function getHourlyStats(): Promise<HourlyStats[]> {
     hourlyCounts[i] = 0;
   }
 
+  // UTC 시간을 KST로 변환하여 시간대 계산
+  const kstOffset = 9 * 60 * 60 * 1000;
   data.forEach(row => {
-    const hour = new Date(row.created_at).getHours();
+    const utcDate = new Date(row.created_at);
+    const kstDate = new Date(utcDate.getTime() + kstOffset);
+    const hour = kstDate.getUTCHours();
     hourlyCounts[hour] = (hourlyCounts[hour] || 0) + 1;
   });
 
@@ -225,24 +246,27 @@ export async function getHourlyStats(): Promise<HourlyStats[]> {
     .sort((a, b) => a.hour - b.hour);
 }
 
-// 일별 통계 (최근 N일)
+// 일별 통계 (최근 N일 - 한국 시간 기준)
 export async function getDailyStats(days: number = 14): Promise<DailyStats[]> {
   const supabase = await createClient();
 
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days);
+  const startDate = getKSTDateStart(days);
 
   const { data } = await supabase
     .from('page_views')
     .select('created_at, session_id')
-    .gte('created_at', startDate.toISOString());
+    .gte('created_at', startDate);
 
   if (!data) return [];
 
   const dailyData: Record<string, { views: number; sessions: Set<string> }> = {};
 
+  // UTC 시간을 KST로 변환하여 날짜 계산
+  const kstOffset = 9 * 60 * 60 * 1000;
   data.forEach(row => {
-    const date = new Date(row.created_at).toISOString().split('T')[0];
+    const utcDate = new Date(row.created_at);
+    const kstDate = new Date(utcDate.getTime() + kstOffset);
+    const date = kstDate.toISOString().split('T')[0];
     if (!dailyData[date]) {
       dailyData[date] = { views: 0, sessions: new Set() };
     }
