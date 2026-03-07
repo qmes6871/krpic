@@ -42,9 +42,9 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function POST(request: NextRequest) {
   try {
-    const { paymentKey, orderId, amount, courseId, userId } = await request.json();
+    const { paymentKey, orderId, amount, courseId, userId, inmateData } = await request.json();
 
-    console.log('Payment confirm request:', { paymentKey, orderId, amount, courseId, userId });
+    console.log('Payment confirm request:', { paymentKey, orderId, amount, courseId, userId, inmateData });
 
     if (!paymentKey || !orderId || !amount || !courseId || !userId) {
       return NextResponse.json(
@@ -89,17 +89,60 @@ export async function POST(request: NextRequest) {
 
     // 수강 등록 생성
     const paymentStatus = isVirtualAccount ? 'unpaid' : 'paid';
-    const { data: enrollment, error: enrollmentError } = await supabaseAdmin
+    const enrollmentData: Record<string, unknown> = {
+      user_id: userId,
+      course_id: courseId,
+      status: enrollmentStatus,
+      payment_status: paymentStatus,
+      payment_amount: amount,
+    };
+
+    // 수감자 정보가 있으면 추가
+    if (inmateData) {
+      enrollmentData.inmate_institution = inmateData.inmateInstitution || null;
+      enrollmentData.inmate_name = inmateData.inmateName || null;
+      enrollmentData.inmate_number = inmateData.inmateNumber || null;
+    }
+
+    let enrollment;
+    let enrollmentError;
+
+    // 먼저 insert 시도
+    const insertResult = await supabaseAdmin
       .from('enrollments')
-      .insert({
-        user_id: userId,
-        course_id: courseId,
-        status: enrollmentStatus,
-        payment_status: paymentStatus,
-        payment_amount: amount,
-      })
+      .insert(enrollmentData)
       .select()
       .single();
+
+    if (insertResult.error) {
+      // 중복 키 오류인 경우 기존 enrollment 업데이트
+      if (insertResult.error.code === '23505') {
+        console.log('Duplicate enrollment found, updating existing one...');
+        const updateResult = await supabaseAdmin
+          .from('enrollments')
+          .update({
+            status: enrollmentStatus,
+            payment_status: paymentStatus,
+            payment_amount: amount,
+            ...(inmateData ? {
+              inmate_institution: inmateData.inmateInstitution || null,
+              inmate_name: inmateData.inmateName || null,
+              inmate_number: inmateData.inmateNumber || null,
+            } : {}),
+          })
+          .eq('user_id', userId)
+          .eq('course_id', courseId)
+          .select()
+          .single();
+
+        enrollment = updateResult.data;
+        enrollmentError = updateResult.error;
+      } else {
+        enrollmentError = insertResult.error;
+      }
+    } else {
+      enrollment = insertResult.data;
+    }
 
     // 가상계좌 정보 준비 (enrollment 실패와 관계없이)
     const bankCode = data.virtualAccount?.bankCode || '';
@@ -114,7 +157,7 @@ export async function POST(request: NextRequest) {
     } : null;
 
     if (enrollmentError) {
-      console.error('Enrollment creation error:', enrollmentError);
+      console.error('Enrollment creation/update error:', enrollmentError);
       // enrollment 실패해도 가상계좌 정보는 반환
       return NextResponse.json({
         success: true,

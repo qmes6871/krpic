@@ -38,7 +38,7 @@ export interface Enrollment {
   id: string;
   user_id: string;
   course_id: string;
-  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  status: 'pending' | 'pending_payment' | 'approved' | 'rejected' | 'completed';
   payment_status: 'unpaid' | 'paid' | 'refunded';
   payment_amount: number;
   notes: string | null;
@@ -51,6 +51,10 @@ export interface Enrollment {
   certificate_number: string | null;
   // 업로드된 증명서
   uploaded_certificates: UploadedCertificates | null;
+  // 수감자 정보 (구속 수감자 교육용)
+  inmate_institution: string | null;
+  inmate_name: string | null;
+  inmate_number: string | null;
   created_at: string;
   updated_at: string;
   // Joined data

@@ -58,6 +58,13 @@ function PaymentSuccessContent() {
       setCourseId(courseIdParam);
 
       try {
+        // 수감자 교육 정보 준비
+        const inmateData = detention === 'true' ? {
+          inmateInstitution: searchParams.get('institution') || '',
+          inmateName: searchParams.get('inmateName') || '',
+          inmateNumber: searchParams.get('inmateNumber') || '',
+        } : null;
+
         const response = await fetch('/api/payments/toss/confirm', {
           method: 'POST',
           headers: {
@@ -69,6 +76,7 @@ function PaymentSuccessContent() {
             amount: Number(amount),
             courseId: courseIdParam,
             userId: userIdParam,
+            ...(inmateData && { inmateData }),
           }),
         });
 

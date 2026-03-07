@@ -42,6 +42,11 @@ ALTER TABLE enrollments ADD COLUMN IF NOT EXISTS max_watched_position INTEGER DE
 ALTER TABLE enrollments ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP WITH TIME ZONE DEFAULT NULL;
 ALTER TABLE enrollments ADD COLUMN IF NOT EXISTS certificate_number TEXT;
 
+-- 수감자 정보 필드 추가 (구속 수감자 교육용)
+ALTER TABLE enrollments ADD COLUMN IF NOT EXISTS inmate_institution TEXT;
+ALTER TABLE enrollments ADD COLUMN IF NOT EXISTS inmate_name TEXT;
+ALTER TABLE enrollments ADD COLUMN IF NOT EXISTS inmate_number TEXT;
+
 -- 3. 수강 신청 테이블
 CREATE TABLE IF NOT EXISTS enrollments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

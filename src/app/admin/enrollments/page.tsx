@@ -17,7 +17,9 @@ import {
   CheckCircle2,
   Calendar,
   MessageSquare,
-  FileText
+  FileText,
+  Building2,
+  Hash
 } from 'lucide-react';
 import { getEnrollments, updateEnrollment, deleteEnrollment } from '@/lib/admin/actions';
 import { Enrollment, Profile, Course } from '@/types/admin';
@@ -99,6 +101,7 @@ function EnrollmentsContent() {
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { label: string; color: string; bg: string }> = {
       pending: { label: '대기중', color: 'text-yellow-700', bg: 'bg-yellow-100' },
+      pending_payment: { label: '입금대기', color: 'text-orange-700', bg: 'bg-orange-100' },
       approved: { label: '승인', color: 'text-green-700', bg: 'bg-green-100' },
       rejected: { label: '거절', color: 'text-red-700', bg: 'bg-red-100' },
       completed: { label: '완료', color: 'text-blue-700', bg: 'bg-blue-100' }
@@ -231,6 +234,7 @@ function EnrollmentsContent() {
           >
             <option value="all">전체 상태</option>
             <option value="pending">대기중</option>
+            <option value="pending_payment">입금대기</option>
             <option value="approved">승인</option>
             <option value="rejected">거절</option>
             <option value="completed">완료</option>
@@ -290,6 +294,7 @@ function EnrollmentsContent() {
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${statusConfig.bg} ${statusConfig.color}`}>
                           {enrollment.status === 'pending' && <Clock className="w-3 h-3" />}
+                          {enrollment.status === 'pending_payment' && <CreditCard className="w-3 h-3" />}
                           {enrollment.status === 'approved' && <CheckCircle className="w-3 h-3" />}
                           {enrollment.status === 'rejected' && <XCircle className="w-3 h-3" />}
                           {statusConfig.label}
@@ -303,7 +308,7 @@ function EnrollmentsContent() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
-                          {enrollment.status === 'pending' && (
+                          {(enrollment.status === 'pending' || enrollment.status === 'pending_payment') && (
                             <>
                               <button
                                 onClick={() => handleUpdateStatus(enrollment, 'approved')}
@@ -436,6 +441,30 @@ function EnrollmentsContent() {
                   </div>
                 </div>
 
+                {/* Inmate Info - Only show if detention course */}
+                {selectedEnrollment.inmate_name && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-3">수감자 정보</h3>
+                    <div className="bg-blue-50 rounded-xl p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm text-gray-600">교정기관:</span>
+                        <span className="font-medium text-gray-900">{selectedEnrollment.inmate_institution || '-'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm text-gray-600">수감자 성함:</span>
+                        <span className="font-medium text-gray-900">{selectedEnrollment.inmate_name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Hash className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm text-gray-600">수감번호:</span>
+                        <span className="font-medium text-gray-900">{selectedEnrollment.inmate_number || '-'}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Enrollment Info */}
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-3">신청 정보</h3>
@@ -473,6 +502,17 @@ function EnrollmentsContent() {
                       대기중
                     </button>
                     <button
+                      onClick={() => handleUpdateStatus(selectedEnrollment, 'pending_payment')}
+                      disabled={actionLoading || selectedEnrollment.status === 'pending_payment'}
+                      className={`py-2 rounded-xl text-sm font-medium transition-colors ${
+                        selectedEnrollment.status === 'pending_payment'
+                          ? 'bg-orange-100 text-orange-700'
+                          : 'bg-gray-100 text-gray-600 hover:bg-orange-50 hover:text-orange-700'
+                      }`}
+                    >
+                      입금대기
+                    </button>
+                    <button
                       onClick={() => handleUpdateStatus(selectedEnrollment, 'approved')}
                       disabled={actionLoading || selectedEnrollment.status === 'approved'}
                       className={`py-2 rounded-xl text-sm font-medium transition-colors ${
@@ -497,7 +537,7 @@ function EnrollmentsContent() {
                     <button
                       onClick={() => handleUpdateStatus(selectedEnrollment, 'completed')}
                       disabled={actionLoading || selectedEnrollment.status === 'completed'}
-                      className={`py-2 rounded-xl text-sm font-medium transition-colors ${
+                      className={`col-span-2 py-2 rounded-xl text-sm font-medium transition-colors ${
                         selectedEnrollment.status === 'completed'
                           ? 'bg-blue-100 text-blue-700'
                           : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-700'

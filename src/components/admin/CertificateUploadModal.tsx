@@ -14,6 +14,7 @@ import {
   Send,
   Eye,
   XCircle,
+  Calendar,
 } from 'lucide-react';
 import {
   getUploadedCertificates,
@@ -88,6 +89,8 @@ export default function CertificateUploadModal({ enrollmentId, studentName, onCl
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedCertId, setSelectedCertId] = useState<string | null>(null);
+  const [issuingCertId, setIssuingCertId] = useState<string | null>(null);  // 발급일 선택 중인 증명서
+  const [issueDate, setIssueDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
   // 수료증인지 확인 (자동 발급)
   const isCompletionCert = (certId: string) => COMPLETION_CERTIFICATE_IDS.includes(certId);
@@ -203,23 +206,36 @@ export default function CertificateUploadModal({ enrollmentId, studentName, onCl
     setDeletingId(null);
   };
 
+  // 발급처리 버튼 클릭 시 발급일 선택 UI 표시
+  const handleShowIssueDate = (certId: string) => {
+    setIssuingCertId(certId);
+    setIssueDate(new Date().toISOString().split('T')[0]);  // 기본값은 오늘
+  };
+
+  // 발급 확인
   const handleIssue = async (certId: string) => {
     setIssuingId(certId);
     setMessage(null);
 
-    const result = await issueCertificate(enrollmentId, certId);
+    const result = await issueCertificate(enrollmentId, certId, issueDate);
 
     if (result.success) {
       setIssuedCerts((prev) => ({
         ...prev,
-        [certId]: { issuedAt: new Date().toISOString() },
+        [certId]: { issuedAt: new Date().toISOString(), issueDate },
       }));
       setMessage({ type: 'success', text: '증명서가 발급되었습니다.' });
+      setIssuingCertId(null);  // 발급일 선택 UI 닫기
     } else {
       setMessage({ type: 'error', text: result.error || '발급에 실패했습니다.' });
     }
 
     setIssuingId(null);
+  };
+
+  // 발급 취소 (날짜 선택 UI 닫기)
+  const handleCancelIssue = () => {
+    setIssuingCertId(null);
   };
 
   const handleRevoke = async (certId: string) => {
@@ -521,6 +537,36 @@ export default function CertificateUploadModal({ enrollmentId, studentName, onCl
                               발급됨
                             </span>
                           </div>
+                        ) : issuingCertId === cert.id ? (
+                          // 발급일 선택 UI
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-amber-300">
+                              <Calendar className="w-4 h-4 text-amber-600" />
+                              <input
+                                type="date"
+                                value={issueDate}
+                                onChange={(e) => setIssueDate(e.target.value)}
+                                className="text-sm border-none outline-none bg-transparent w-32"
+                              />
+                            </div>
+                            <button
+                              onClick={() => handleIssue(cert.id)}
+                              disabled={isIssuing}
+                              className="px-3 py-1.5 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+                            >
+                              {isIssuing ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                '확인'
+                              )}
+                            </button>
+                            <button
+                              onClick={handleCancelIssue}
+                              className="px-3 py-1.5 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors"
+                            >
+                              취소
+                            </button>
+                          </div>
                         ) : (
                           <div className="flex items-center gap-2">
                             <button
@@ -536,15 +582,10 @@ export default function CertificateUploadModal({ enrollmentId, studentName, onCl
                               )}
                             </button>
                             <button
-                              onClick={() => handleIssue(cert.id)}
-                              disabled={isIssuing}
-                              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+                              onClick={() => handleShowIssueDate(cert.id)}
+                              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
                             >
-                              {isIssuing ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Send className="w-4 h-4" />
-                              )}
+                              <Send className="w-4 h-4" />
                               발급처리
                             </button>
                           </div>

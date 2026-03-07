@@ -472,9 +472,6 @@ async function generatePetitionCertificate(pdfDoc, font, logoImage, sealImage, i
   centerText(page, '탄  원  서', y, font, 30, theme.primary);
   y -= 45;
 
-  page.drawLine({ start: { x: 55, y }, end: { x: PAGE_WIDTH - 55, y }, thickness: 1, color: theme.border });
-  y -= 30;
-
   // 피고인 성명 (고정 위치)
   page.drawText('피고인 성명 :', { x: 70, y: NAME_Y, size: 13, font, color: rgb(0.1, 0.1, 0.1) });
   page.drawLine({ start: { x: NAME_X + 15, y: NAME_Y - 3 }, end: { x: 390, y: NAME_Y - 3 }, thickness: 0.5, color: theme.secondary });
@@ -564,9 +561,6 @@ async function generateReflectionCertificate(pdfDoc, font, logoImage, sealImage,
 
   centerText(page, isCounseling ? '심리상담 소감문' : '이수 소감문', y, font, 28, theme.primary);
   y -= 40;
-
-  page.drawLine({ start: { x: 55, y }, end: { x: PAGE_WIDTH - 55, y }, thickness: 1, color: theme.border });
-  y -= 30;
 
   // 성명 (고정 위치)
   page.drawText('성        명 :', { x: 70, y: NAME_Y, size: 13, font, color: rgb(0.1, 0.1, 0.1) });
