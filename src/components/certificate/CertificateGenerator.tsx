@@ -62,6 +62,50 @@ const ISSUABLE_CERTIFICATE_IDS = [
 // 자동 생성 가능한 증명서 (수료증 + 발급대상 증명서)
 const AUTO_GENERATED_CERTIFICATE_IDS = [...COMPLETION_CERTIFICATE_IDS, ...ISSUABLE_CERTIFICATE_IDS];
 
+// 인앱 브라우저 감지
+const isInAppBrowser = (): boolean => {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  return /NAVER|KAKAOTALK|Instagram|FB_IAB|FBAN|FBAV|Line|SamsungBrowser.*CrossApp/i.test(ua);
+};
+
+// 모바일 기기 감지
+const isMobileDevice = (): boolean => {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+};
+
+// PDF 열기/다운로드 (인앱/모바일 브라우저 분기 처리)
+const openOrDownloadPdf = (url: string, filename: string): void => {
+  if (isInAppBrowser() || isMobileDevice()) {
+    // 인앱 브라우저 또는 모바일: 강제 다운로드
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => document.body.removeChild(link), 100);
+  } else {
+    // PC 브라우저: 새 탭에서 PDF 열기
+    window.open(url, '_blank');
+  }
+};
+
+// base64를 data URL로 변환하여 다운로드 (인앱 브라우저용)
+const downloadPdfFromBase64 = (base64: string, filename: string): void => {
+  const dataUrl = `data:application/pdf;base64,${base64}`;
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = filename;
+  link.target = '_blank';
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(() => document.body.removeChild(link), 100);
+};
+
 export default function CertificateGenerator({ enrollmentId, onClose }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -132,7 +176,7 @@ export default function CertificateGenerator({ enrollmentId, onClose }: Props) {
 
     // 업로드된 파일이 있으면 해당 URL로 이동
     if (uploaded) {
-      window.open(uploaded.url, '_blank');
+      openOrDownloadPdf(uploaded.url, uploaded.fileName || `${cert.name}.pdf`);
       return;
     }
 
@@ -142,18 +186,23 @@ export default function CertificateGenerator({ enrollmentId, onClose }: Props) {
       try {
         const result = await generatePersonalizedCertificate(enrollmentId, cert.id);
         if (result.success && result.pdfBase64) {
-          // base64를 blob으로 변환하여 다운로드
-          const byteCharacters = atob(result.pdfBase64);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          const byteArray = new Uint8Array(byteNumbers);
-          const blob = new Blob([byteArray], { type: 'application/pdf' });
-          const url = URL.createObjectURL(blob);
+          const filename = `${cert.name}.pdf`;
 
-          // 새 탭에서 열기
-          window.open(url, '_blank');
+          if (isInAppBrowser() || isMobileDevice()) {
+            // 인앱 브라우저 또는 모바일: data URL로 직접 다운로드
+            downloadPdfFromBase64(result.pdfBase64, filename);
+          } else {
+            // PC 브라우저: blob URL로 새 탭에서 열기
+            const byteCharacters = atob(result.pdfBase64);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+          }
         } else {
           setError(result.error || '증명서 생성에 실패했습니다.');
         }
