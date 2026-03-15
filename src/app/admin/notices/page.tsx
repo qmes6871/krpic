@@ -17,16 +17,22 @@ import {
   Eye,
   Calendar,
   FileText,
-  MessageSquare
+  MessageSquare,
+  Paperclip,
+  Upload,
+  File,
+  Loader2
 } from 'lucide-react';
 import {
   getNotices,
   createNotice,
   updateNotice,
   deleteNotice,
+  uploadNoticeAttachment,
+  deleteNoticeAttachment,
   NoticeInput
 } from '@/lib/notices/actions';
-import { Notice } from '@/types';
+import { Notice, NoticeAttachment } from '@/types';
 
 const categoryOptions = [
   { value: 'notice', label: '공지', icon: Bell, color: 'bg-blue-100 text-blue-700' },
@@ -58,6 +64,8 @@ export default function AdminNoticesPage() {
   const [formShowPopup, setFormShowPopup] = useState(false);
   const [formViews, setFormViews] = useState(0);
   const [formDate, setFormDate] = useState('');
+  const [formAttachments, setFormAttachments] = useState<NoticeAttachment[]>([]);
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   useEffect(() => {
     loadNotices();
@@ -102,6 +110,7 @@ export default function AdminNoticesPage() {
     setFormShowPopup(false);
     setFormViews(0);
     setFormDate(new Date().toISOString().split('T')[0]);
+    setFormAttachments([]);
   };
 
   const openCreateModal = () => {
@@ -118,12 +127,55 @@ export default function AdminNoticesPage() {
     setFormShowPopup(notice.showPopup || false);
     setFormViews(notice.views);
     setFormDate(notice.date);
+    setFormAttachments(notice.attachments || []);
     setShowEditModal(true);
   };
 
   const openDeleteModal = (notice: Notice) => {
     setSelectedNotice(notice);
     setShowDeleteModal(true);
+  };
+
+  // 파일 업로드 핸들러
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingFile(true);
+    const newAttachments: NoticeAttachment[] = [];
+
+    for (const file of Array.from(files)) {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const result = await uploadNoticeAttachment(formData);
+      if (result.success && result.attachment) {
+        newAttachments.push(result.attachment);
+      } else {
+        setMessage({ type: 'error', text: result.error || '파일 업로드에 실패했습니다.' });
+      }
+    }
+
+    setFormAttachments([...formAttachments, ...newAttachments]);
+    setUploadingFile(false);
+    e.target.value = '';
+  };
+
+  // 첨부파일 삭제 핸들러
+  const handleRemoveAttachment = async (attachment: NoticeAttachment) => {
+    const result = await deleteNoticeAttachment(attachment.url);
+    if (result.success) {
+      setFormAttachments(formAttachments.filter(a => a.url !== attachment.url));
+    } else {
+      setMessage({ type: 'error', text: result.error || '파일 삭제에 실패했습니다.' });
+    }
+  };
+
+  // 파일 크기 포맷
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   const handleCreate = async () => {
@@ -141,6 +193,7 @@ export default function AdminNoticesPage() {
       showPopup: formShowPopup,
       views: formViews,
       createdAt: formDate ? `${formDate}T00:00:00.000Z` : undefined,
+      attachments: formAttachments,
     };
 
     const result = await createNotice(input);
@@ -170,6 +223,7 @@ export default function AdminNoticesPage() {
       showPopup: formShowPopup,
       views: formViews,
       createdAt: formDate ? `${formDate}T00:00:00.000Z` : undefined,
+      attachments: formAttachments,
     };
 
     const result = await updateNotice(selectedNotice.id, input);
@@ -529,6 +583,58 @@ export default function AdminNoticesPage() {
                   />
                 </div>
 
+                {/* Attachments */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">첨부파일</label>
+                  <div className="border border-gray-200 rounded-xl p-4 space-y-3">
+                    {/* 업로드 버튼 */}
+                    <label className={`flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-colors ${uploadingFile ? 'opacity-50 pointer-events-none' : ''}`}>
+                      {uploadingFile ? (
+                        <>
+                          <Loader2 className="w-5 h-5 text-primary-600 animate-spin" />
+                          <span className="text-sm text-gray-600">업로드 중...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-5 h-5 text-gray-400" />
+                          <span className="text-sm text-gray-600">파일 선택 (최대 10MB)</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        multiple
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        disabled={uploadingFile}
+                      />
+                    </label>
+
+                    {/* 첨부파일 목록 */}
+                    {formAttachments.length > 0 && (
+                      <div className="space-y-2">
+                        {formAttachments.map((attachment, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <File className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-gray-700 truncate">{attachment.fileName}</p>
+                                <p className="text-xs text-gray-500">{formatFileSize(attachment.fileSize)}</p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveAttachment(attachment)}
+                              className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Actions */}
                 <div className="flex gap-3">
                   <button
@@ -539,7 +645,7 @@ export default function AdminNoticesPage() {
                   </button>
                   <button
                     onClick={handleCreate}
-                    disabled={actionLoading}
+                    disabled={actionLoading || uploadingFile}
                     className="flex-1 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors disabled:opacity-50"
                   >
                     {actionLoading ? '등록 중...' : '등록'}
@@ -682,6 +788,58 @@ export default function AdminNoticesPage() {
                   />
                 </div>
 
+                {/* Attachments */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">첨부파일</label>
+                  <div className="border border-gray-200 rounded-xl p-4 space-y-3">
+                    {/* 업로드 버튼 */}
+                    <label className={`flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-colors ${uploadingFile ? 'opacity-50 pointer-events-none' : ''}`}>
+                      {uploadingFile ? (
+                        <>
+                          <Loader2 className="w-5 h-5 text-primary-600 animate-spin" />
+                          <span className="text-sm text-gray-600">업로드 중...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-5 h-5 text-gray-400" />
+                          <span className="text-sm text-gray-600">파일 선택 (최대 10MB)</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        multiple
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        disabled={uploadingFile}
+                      />
+                    </label>
+
+                    {/* 첨부파일 목록 */}
+                    {formAttachments.length > 0 && (
+                      <div className="space-y-2">
+                        {formAttachments.map((attachment, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <File className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-gray-700 truncate">{attachment.fileName}</p>
+                                <p className="text-xs text-gray-500">{formatFileSize(attachment.fileSize)}</p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveAttachment(attachment)}
+                              className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Actions */}
                 <div className="flex gap-3">
                   <button
@@ -692,7 +850,7 @@ export default function AdminNoticesPage() {
                   </button>
                   <button
                     onClick={handleUpdate}
-                    disabled={actionLoading}
+                    disabled={actionLoading || uploadingFile}
                     className="flex-1 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors disabled:opacity-50"
                   >
                     {actionLoading ? '수정 중...' : '수정'}

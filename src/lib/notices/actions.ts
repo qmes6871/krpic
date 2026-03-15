@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { Notice } from '@/types';
+import { Notice, NoticeAttachment } from '@/types';
 
 export interface NoticeInput {
   title: string;
@@ -11,6 +11,7 @@ export interface NoticeInput {
   views?: number;
   createdAt?: string;
   showPopup?: boolean;
+  attachments?: NoticeAttachment[];
 }
 
 // 공지사항 목록 조회
@@ -36,6 +37,7 @@ export async function getNotices(): Promise<Notice[]> {
     category: notice.category,
     views: notice.views || 0,
     showPopup: notice.show_popup || false,
+    attachments: notice.attachments || [],
   }));
 }
 
@@ -63,6 +65,7 @@ export async function getNoticeById(id: string): Promise<Notice | null> {
     category: data.category,
     views: data.views || 0,
     showPopup: data.show_popup || false,
+    attachments: data.attachments || [],
   };
 }
 
@@ -87,6 +90,7 @@ export async function createNotice(input: NoticeInput): Promise<{
     category: input.category,
     important: input.important,
     show_popup: input.showPopup || false,
+    attachments: input.attachments || [],
   };
 
   if (input.views !== undefined) {
@@ -123,6 +127,7 @@ export async function updateNotice(
     category: input.category,
     important: input.important,
     show_popup: input.showPopup || false,
+    attachments: input.attachments || [],
     updated_at: new Date().toISOString(),
   };
 
@@ -190,4 +195,79 @@ export async function getNoticeStats(): Promise<{
     important: data.filter((n: any) => n.important).length,
     thisMonth,
   };
+}
+
+// 첨부파일 업로드
+export async function uploadNoticeAttachment(
+  formData: FormData
+): Promise<{ success: boolean; attachment?: NoticeAttachment; error?: string }> {
+  const supabase = await createClient();
+
+  const file = formData.get('file') as File;
+  if (!file) {
+    return { success: false, error: '파일이 없습니다.' };
+  }
+
+  // 파일 크기 제한 (10MB)
+  if (file.size > 10 * 1024 * 1024) {
+    return { success: false, error: '파일 크기는 10MB 이하여야 합니다.' };
+  }
+
+  // 파일명 생성 (timestamp + 랜덤 문자열 + 확장자만 사용 - 한글 파일명은 Supabase에서 지원 안됨)
+  const timestamp = Date.now();
+  const randomStr = Math.random().toString(36).substring(2, 8);
+  const extension = file.name.includes('.') ? file.name.split('.').pop() : '';
+  const filePath = `attachments/${timestamp}-${randomStr}${extension ? '.' + extension : ''}`;
+
+  const { data, error } = await supabase.storage
+    .from('notice-attachments')
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
+
+  if (error) {
+    console.error('Upload error:', error);
+    return { success: false, error: '파일 업로드에 실패했습니다.' };
+  }
+
+  // Public URL 가져오기
+  const { data: { publicUrl } } = supabase.storage
+    .from('notice-attachments')
+    .getPublicUrl(data.path);
+
+  const attachment: NoticeAttachment = {
+    url: publicUrl,
+    fileName: file.name,
+    fileSize: file.size,
+    uploadedAt: new Date().toISOString(),
+  };
+
+  return { success: true, attachment };
+}
+
+// 첨부파일 삭제
+export async function deleteNoticeAttachment(
+  url: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+
+  // URL에서 파일 경로 추출
+  const urlParts = url.split('notice-attachments/');
+  if (urlParts.length < 2) {
+    return { success: false, error: '잘못된 파일 URL입니다.' };
+  }
+
+  const filePath = urlParts[1];
+
+  const { error } = await supabase.storage
+    .from('notice-attachments')
+    .remove([filePath]);
+
+  if (error) {
+    console.error('Delete error:', error);
+    return { success: false, error: '파일 삭제에 실패했습니다.' };
+  }
+
+  return { success: true };
 }

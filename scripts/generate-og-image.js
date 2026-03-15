@@ -27,7 +27,7 @@ async function generateOgImage() {
       <text x="600" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="rgba(255,255,255,0.9)">재범방지교육통합센터</text>
 
       <!-- 서브 텍스트 -->
-      <text x="600" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="rgba(255,255,255,0.7)">법원 · 검찰 인정 공인 재범방지교육 전문기관</text>
+      <text x="600" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="rgba(255,255,255,0.7)">법원 · 검찰 제출 가능한 재범방지교육 전문기관</text>
 
       <!-- 하단 키워드 -->
       <text x="600" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="rgba(255,255,255,0.5)">음주운전 | 폭력범죄 | 성범죄 | 마약범죄 | 재산범죄 | 온라인 교육</text>

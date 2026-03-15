@@ -2,7 +2,7 @@
 export const siteConfig = {
   name: 'KRPIC 재범방지교육통합센터',
   shortName: 'KRPIC',
-  description: '법원, 검찰 인정 공인 재범방지교육 전문기관. 음주운전, 폭력범죄, 성범죄, 마약범죄, 도박중독 등 다양한 재범방지교육 프로그램을 제공합니다. 온라인 교육으로 편리하게 이수하세요.',
+  description: '재범방지교육 전문기관. 법원, 검찰 제출 가능한 재범방지교육 프로그램을 제공합니다. 음주운전, 폭력범죄, 성범죄, 마약범죄, 도박중독 등 온라인 교육으로 편리하게 이수하세요.',
   // 도메인 변경 시 이 URL만 변경하세요
   url: 'https://krpic.co.kr',
   // 기본 이미지 (OG 이미지)
@@ -46,7 +46,7 @@ export const siteConfig = {
 export const pageMetadata = {
   home: {
     title: '재범방지교육통합센터 | 재범방지교육을 통한 양형자료 준비',
-    description: '법원, 검찰 인정 공인 재범방지교육 전문기관. 음주운전, 폭력범죄, 성범죄, 마약범죄, 도박중독 등 온라인 교육 프로그램 제공. 24시간 수강 가능.',
+    description: '재범방지교육 전문기관. 법원, 검찰 제출 가능한 재범방지교육 프로그램 제공. 음주운전, 폭력범죄, 성범죄, 마약범죄, 도박중독 등 온라인 교육. 24시간 수강 가능.',
   },
   about: {
     title: '센터 소개 | 재범방지교육통합센터',
@@ -98,7 +98,7 @@ export const pageMetadata = {
 export const categoryMetadata: Record<string, { title: string; description: string }> = {
   'drunk-driving': {
     title: '음주운전 재범방지교육 | 재범방지교육통합센터',
-    description: '음주운전 재범방지교육 프로그램. 법원, 검찰 인정 공인 교육기관에서 전문적인 음주운전 예방 교육을 받으세요. 온라인 수강 가능.',
+    description: '음주운전 재범방지교육 프로그램. 법원, 검찰  교육기관에서 전문적인 음주운전 예방 교육을 받으세요. 온라인 수강 가능.',
   },
   'violence': {
     title: '폭력범죄 재범방지교육 | 재범방지교육통합센터',

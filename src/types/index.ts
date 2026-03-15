@@ -26,6 +26,13 @@ export interface FAQ {
   answer: string;
 }
 
+export interface NoticeAttachment {
+  url: string;
+  fileName: string;
+  fileSize: number;
+  uploadedAt: string;
+}
+
 export interface Notice {
   id: string;
   title: string;
@@ -35,6 +42,7 @@ export interface Notice {
   category: 'notice' | 'update' | 'event' | 'guide';
   views: number;
   showPopup?: boolean;
+  attachments?: NoticeAttachment[];
 }
 
 export interface Review {

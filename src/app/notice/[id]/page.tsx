@@ -12,7 +12,10 @@ import {
   RefreshCw,
   Gift,
   BookOpen,
-  Pin
+  Pin,
+  Paperclip,
+  Download,
+  FileText
 } from 'lucide-react';
 import { getNotices, getNoticeById, incrementNoticeViews } from '@/lib/notices/actions';
 import { noticeCategories } from '@/data/notices';
@@ -172,6 +175,41 @@ export default async function NoticeDetailPage({ params }: Props) {
                     );
                   })}
                 </div>
+
+                {/* Attachments */}
+                {notice.attachments && notice.attachments.length > 0 && (
+                  <div className="mt-8 pt-6 border-t border-primary-100">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Paperclip className="w-5 h-5 text-primary-600" />
+                      <h3 className="font-semibold text-primary-900">첨부파일</h3>
+                      <span className="text-sm text-primary-500">({notice.attachments.length}개)</span>
+                    </div>
+                    <div className="space-y-2">
+                      {notice.attachments.map((attachment, index) => (
+                        <a
+                          key={index}
+                          href={`/api/download?url=${encodeURIComponent(attachment.url)}&filename=${encodeURIComponent(attachment.fileName)}`}
+                          className="flex items-center gap-3 p-4 bg-primary-50 rounded-xl hover:bg-primary-100 transition-colors group"
+                        >
+                          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                            <FileText className="w-5 h-5 text-primary-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-primary-800 truncate group-hover:text-primary-900">
+                              {attachment.fileName}
+                            </p>
+                            <p className="text-sm text-primary-500">
+                              {attachment.fileSize < 1024 * 1024
+                                ? `${(attachment.fileSize / 1024).toFixed(1)} KB`
+                                : `${(attachment.fileSize / (1024 * 1024)).toFixed(1)} MB`}
+                            </p>
+                          </div>
+                          <Download className="w-5 h-5 text-primary-400 group-hover:text-primary-600 transition-colors" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Share Actions */}

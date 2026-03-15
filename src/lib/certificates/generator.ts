@@ -8,7 +8,7 @@ import QRCode from 'qrcode';
 const SEAL_IMAGE_PATH = 'public/images/seal.png';
 
 // 사이트 URL
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.krpic.co.kr';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://krpic.co.kr';
 
 // A4 크기 (pt)
 const PAGE_WIDTH = 595.28;
