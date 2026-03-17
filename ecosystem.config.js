@@ -5,7 +5,7 @@ module.exports = {
     args: '.next/standalone/server.js',
     cwd: '/var/www/krpic',
     env: {
-      PORT: 3006,
+      PORT: 3004,
       NODE_ENV: 'production',
       // Supabase
       NEXT_PUBLIC_SUPABASE_URL: 'https://janbisapzgazpadjiniv.supabase.co',
